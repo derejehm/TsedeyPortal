@@ -18,6 +18,7 @@ import Login from "./pages/login";
 import Geography from "./pages/geography";
 import Calendar from "./pages/calendar/calendar";
 import Logout from "./components/logout";
+import Sekela from "./pages/sekela/Sekela";
 
 
 
@@ -52,7 +53,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Login />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/team" element={<Team />} />
+                <Route path="/revenue" element={<Sekela />} />
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/form" element={<Form />} />

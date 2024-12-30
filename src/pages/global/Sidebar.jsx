@@ -136,7 +136,7 @@ const Sidebar = () => {
             </Typography>
             <Item
               title="Revenue"
-              to="/team"
+              to="/Revenue"
               icon={<PaymentsOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
