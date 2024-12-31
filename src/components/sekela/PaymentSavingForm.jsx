@@ -1,6 +1,16 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  AlertTitle,
+  Table, TableBody, TableCell, TableHead, TableRow, Paper
+} from "@mui/material";
+
 const PaymentSavingForm = ({ paymentDetails, onClear }) => {
   const [narration, setNarration] = useState("");
   const [saveResponse, setSaveResponse] = useState(null);
@@ -74,57 +84,104 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
   };
 
   return (
-    <div className="p-5 bg-white rounded-lg shadow">
+    <Paper
+      elevation={3}
+      sx={{
+        padding: "16px",
+        margin: "16px auto",
+
+      }}
+    >
       {!saveResponse ? (
-        <form onSubmit={handlePaymentSave}>
-          <div className="mb-4">
-            <input
-              className="bg-green text-white placeholder-white rounded-md p-3 w-full"
-              type="text"
-              id="narration"
-              placeholder="Enter Payment Narration"
-              value={narration}
-              onChange={(e) => setNarration(e.target.value)}
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-blue-600 text-white py-2 px-4 rounded"
-          >
+        <Box
+          component="form"
+          onSubmit={handlePaymentSave}
+          noValidate
+          sx={{ display: "flex", flexDirection: "column", gap: "16px" }}
+        >
+          <Typography variant="h6" gutterBottom>
             Save Payment
-          </button>
-          <div className="mt-4">
-            <h4 className="font-semibold">Request Payload Preview:</h4>
-            <pre className="bg-gray-100 p-3 rounded overflow-auto">
-              <code>{JSON.stringify(requestPayloadPreview, null, 2)}</code>
-            </pre>
-          </div>
-        </form>
+          </Typography>
+          <TextField
+            fullWidth
+            variant="outlined"
+            label="Payment Narration"
+            placeholder="Enter Payment Narration"
+            value={narration}
+            onChange={(e) => setNarration(e.target.value)}
+            required
+          />
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              sx={{ width: "48%" }}
+            >
+              Save Payment
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              sx={{ width: "48%" }}
+              onClick={handleClear}
+            >
+              Clear
+            </Button>
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" gutterBottom>
+              Please reivew before continue Preview:
+            </Typography>
+       
+              <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+                <Table sx={{ minWidth: 650 }}>
+           
+                  <TableBody>
+                    {Object.entries(requestPayloadPreview).map(([key, value]) => (
+                      <TableRow key={key}>
+                        <TableCell>{key.replace(/_/g, ' ')}</TableCell>
+                        <TableCell>{value}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Paper>
+           
+          </Box>
+        </Box>
       ) : (
-        <div className="text-left text-md font-bold mt-5">
-          {saveResponse.status === "200" ? (
-            <h3 className="text-green1 text-xl font-bold italic">
-              {saveResponse.message}
-            </h3>
-          ) : (
-            <h3 className="text-red text-xl font-bold italic">
-              {saveResponse.message}
-            </h3>
-          )}
-          <button
-            className="text-white bg-cyan-600 mt-2 py-2 px-4 rounded"
+        <Box>
+          <Alert
+            severity={saveResponse.status === "200" ? "success" : "error"}
+            sx={{ marginBottom: "16px" }}
+          >
+            <AlertTitle>
+              {saveResponse.status === "200"
+                ? "Payment Saved Successfully"
+                : "Payment Save Failed"}
+            </AlertTitle>
+            {saveResponse.message}
+          </Alert>
+          <Button
+            variant="contained"
+            color="primary"
             onClick={handleClear}
+            sx={{ marginTop: "16px" }}
           >
             Clear
-          </button>
-        </div>
+          </Button>
+        </Box>
       )}
-      {saveError && <p className="error text-red">{saveError}</p>}
-      <p className="mt-1 font-xs text-dark-eval-2">
+      {saveError && (
+        <Alert severity="error" sx={{ marginTop: "16px" }}>
+          {saveError}
+        </Alert>
+      )}
+      <Typography variant="body2" sx={{ marginTop: "16px" }}>
         Total: {paymentDetails.totalOutstandingFee}
-      </p>
-    </div>
+      </Typography>
+    </Paper>
   );
 };
 

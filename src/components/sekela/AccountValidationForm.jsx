@@ -1,21 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import PaymentSavingForm from "./PaymentSavingForm"; // Import PaymentSavingForm
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  AlertTitle,
+} from "@mui/material";
 
-const AccountValidationForm = ({
-  studentId,
-  totalOutstandingFee,
-  studentFullName,
-  transactionId,
-  months, // Receive months as an array
-  amounts, // Receive amounts as an array
-  grade,
-  school,
-  onClear,
-}) => {
+
+const AccountValidationForm = ({onSubmit, onClear}) => {
   const [accountNumber, setAccountNumber] = useState("");
   const [accountResponse, setAccountResponse] = useState(null);
   const [error, setError] = useState(null);
+
+
+
 
   const handleAccountSubmit = async (e) => {
     e.preventDefault();
@@ -26,8 +28,6 @@ const AccountValidationForm = ({
       BankID: "02",
       UniqueID: "aba47c60-e606-11ee-b720-f51215b66fxx",
       FunctionName: "GETNAME",
-      ISOFieldsRequest: null,
-      ISOFieldsResponse: null,
       PaymentDetails: {
         MerchantID: "YAYAPAYMENT",
         FunctionName: "GETNAME",
@@ -36,40 +36,21 @@ const AccountValidationForm = ({
         ReferenceNumber: "aba47c60-e606-11ee-b720-f51215b66fffyuyuxx",
       },
       InfoFields: {
-        InfoField1: "",
         InfoField7: accountNumber,
       },
       MerchantConfig: {
-        DLLCallID: "YAYAPAYMENT",
         MerchantCode: "YAYAPAYMENT",
         MerchantName: "YAYAPAYMENT",
-        TrxAuthontication: null,
-        MerchantProvider: "YAYA",
-        MerchantURL: "https://localhost:44396/api/dynamic/Validate",
-        MerchantReference: "{DATE}{STAN}",
       },
-      ISOResponseFields: null,
-      ResponseDetail: null,
       Customerdetail: {
         CustomerID: "1648094426",
         Country: "ETHIOPIATEST",
         MobileNumber: "251905557471",
         EmailID: "jack.njama@craftsilicon.com",
-        FirstName: "Jack",
-        LastName: "Njama",
       },
-      ISORequest: null,
-      ResponseFields: null,
       AppDetail: {
         AppName: "TSEDEY",
         Version: "1.8.17",
-        CodeBase: "ANDROID",
-        LATLON: "-1.2647891,36.7632677",
-        TrxSource: "APP",
-        DeviceNotificationID: "",
-        DeviceIMEI: "148e122c64a564f2",
-        DeviceIMSI: "148e122c64a564f2",
-        ConnString: "",
       },
     };
 
@@ -80,13 +61,18 @@ const AccountValidationForm = ({
         { headers: { "Content-Type": "application/json" } }
       );
 
-      console.log("Account Validation Response:", response.data);
+      if (response.data.status !== "200") {
+        throw new Error(response.data.message || "Account validation failed.");
+      }
+
       setAccountResponse(response.data);
+
+      onSubmit( response.data.extraData );
       setError(null);
       setAccountNumber("");
     } catch (err) {
       console.error("Error Details: ", err);
-      setError("An error occurred while validating the account number.");
+      setError(err.message || "An error occurred while validating the account.");
       setAccountResponse(null);
     }
   };
@@ -104,55 +90,62 @@ const AccountValidationForm = ({
     parseFloat(accountResponse.extraData?.AvailableBalance) > 0;
 
   return (
-    <div>
-      {accountResponse ? null : (
-        <form onSubmit={handleAccountSubmit} className="w-full max-w-lg p-5">
-          <div className="flex flex-col gap-5">
-            <label
-              className="text-gray-800 font-semibold"
-              htmlFor="accountNumber"
+    <Box >
+
+
+      {!accountResponse && (
+        <Box component="form" onSubmit={handleAccountSubmit} noValidate>
+          <TextField
+            fullWidth
+            variant="outlined"
+            label="Account Number"
+            placeholder="Enter Account Number"
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value)}
+            required
+            sx={{ marginBottom: "16px" }}
+          />
+          <Box display="flex" justifyContent="space-between">
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              sx={{ width: "48%" }}
             >
-              Please Enter The Account Number:
-            </label>
-            <div className="flex gap-3 w-full">
-              <input
-                className="bg-green text-white placeholder-white rounded-md p-3 w-full"
-                type="text"
-                id="accountNumber"
-                placeholder="Enter Account Number"
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value)}
-                required
-              />
-              <button
-                type="submit"
-                className="bg-blue-500 text-white rounded-md p-3 w-32"
-              >
-                Validate Account
-              </button>
-              <button
-                type="button"
-                onClick={handleClear}
-                className="bg-red-500 text-white rounded-md p-3 w-32"
-              >
-                Clear
-              </button>
-            </div>
-          </div>
-        </form>
+              Validate Account
+            </Button>
+            <Button
+              type="button"
+              variant="outlined"
+              color="secondary"
+              sx={{ width: "48%" }}
+              onClick={handleClear}
+            >
+              Clear
+            </Button>
+          </Box>
+        </Box>
       )}
-      {error && <p className="error">{error}</p>}
+
+      {error && (
+        <Alert severity="error" sx={{ marginTop: "16px" }}>
+          {error}
+        </Alert>
+      )}
+
       {accountResponse && (
-        <div className="text-left text-md font-bold mt-5 text-dark-eval-1">
-          <p>Customer Name: {accountResponse.extraData["Customer Name"]}</p>
-          <p>Account Number: {accountResponse.extraData["Account Number"]}</p>
-          <p>Phone Number: {accountResponse.extraData["Phone Number"]}</p>
-          <p>
+        <Alert severity="success" sx={{ marginTop: "16px" }}>
+          <AlertTitle>Account Details</AlertTitle>
+          <Typography>Customer Name: {accountResponse.extraData["Customer Name"]}</Typography>
+          <Typography>Account Number: {accountResponse.extraData["Account Number"]}</Typography>
+          <Typography>Phone Number: {accountResponse.extraData["Phone Number"]}</Typography>
+          <Typography>
             Available Balance: {accountResponse.extraData["AvailableBalance"]}
-          </p>
-        </div>
+          </Typography>
+        </Alert>
       )}
-      {canShowPaymentSavingForm && (
+
+      {/* {canShowPaymentSavingForm && (
         <PaymentSavingForm
           paymentDetails={{
             studentId,
@@ -162,15 +155,16 @@ const AccountValidationForm = ({
             studentFullName,
             phoneNumber: accountResponse.extraData["Phone Number"],
             transactionId,
-            months, 
-            amounts, 
-            grade, 
-            school, 
+             months,
+            amounts,
+            grade,
+            school,
           }}
           onClear={handleClear}
         />
-      )}
-    </div>
+      )
+      } */}
+    </Box>
   );
 };
 
