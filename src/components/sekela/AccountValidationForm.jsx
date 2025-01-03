@@ -9,67 +9,32 @@ import {
   Alert,
   AlertTitle,
 } from "@mui/material";
+import { GetCustomerDetail } from "../../services/sekelaServices";
 
 
-const AccountValidationForm = ({onSubmit, onClear}) => {
+const AccountValidationForm = ({ onSubmit, onClear }) => {
   const [accountNumber, setAccountNumber] = useState("");
   const [accountResponse, setAccountResponse] = useState(null);
   const [error, setError] = useState(null);
 
-
-
-
   const handleAccountSubmit = async (e) => {
     e.preventDefault();
 
-    const requestBody = {
-      CustomerID: "1648094426",
-      Country: "ETHIOPIATEST",
-      BankID: "02",
-      UniqueID: "aba47c60-e606-11ee-b720-f51215b66fxx",
-      FunctionName: "GETNAME",
-      PaymentDetails: {
-        MerchantID: "YAYAPAYMENT",
-        FunctionName: "GETNAME",
-        AccountID: accountNumber,
-        Amount: "0",
-        ReferenceNumber: "aba47c60-e606-11ee-b720-f51215b66fffyuyuxx",
-      },
-      InfoFields: {
-        InfoField7: accountNumber,
-      },
-      MerchantConfig: {
-        MerchantCode: "YAYAPAYMENT",
-        MerchantName: "YAYAPAYMENT",
-      },
-      Customerdetail: {
-        CustomerID: "1648094426",
-        Country: "ETHIOPIATEST",
-        MobileNumber: "251905557471",
-        EmailID: "jack.njama@craftsilicon.com",
-      },
-      AppDetail: {
-        AppName: "TSEDEY",
-        Version: "1.8.17",
-      },
-    };
-
     try {
-      const response = await axios.post(
-        "http://10.10.105.21:7271/api/YAYA/GetCustomerDetail",
-        requestBody,
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const response = await GetCustomerDetail(accountNumber);
+      console.log("Response:", response);
 
       if (response.data.status !== "200") {
+        
         throw new Error(response.data.message || "Account validation failed.");
       }
 
       setAccountResponse(response.data);
 
-      onSubmit( response.data.extraData );
+      onSubmit(response.data.extraData);
       setError(null);
       setAccountNumber("");
+
     } catch (err) {
       console.error("Error Details: ", err);
       setError(err.message || "An error occurred while validating the account.");
@@ -91,8 +56,6 @@ const AccountValidationForm = ({onSubmit, onClear}) => {
 
   return (
     <Box >
-
-
       {!accountResponse && (
         <Box component="form" onSubmit={handleAccountSubmit} noValidate>
           <TextField
@@ -145,25 +108,6 @@ const AccountValidationForm = ({onSubmit, onClear}) => {
         </Alert>
       )}
 
-      {/* {canShowPaymentSavingForm && (
-        <PaymentSavingForm
-          paymentDetails={{
-            studentId,
-            totalOutstandingFee,
-            accountNumber: accountResponse.extraData["Account Number"],
-            customerName: accountResponse.extraData["Customer Name"],
-            studentFullName,
-            phoneNumber: accountResponse.extraData["Phone Number"],
-            transactionId,
-             months,
-            amounts,
-            grade,
-            school,
-          }}
-          onClear={handleClear}
-        />
-      )
-      } */}
     </Box>
   );
 };

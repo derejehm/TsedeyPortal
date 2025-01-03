@@ -18,6 +18,7 @@ import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import WaterDropOutlinedIcon from '@mui/icons-material/WaterDropOutlined';
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -149,9 +150,16 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
             <Item
-              title="Invoices Balances"
-              to="/invoices"
+              title="Supervision"
+              to="/paymentsupervision"
               icon={<ReceiptOutlinedIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+             <Item
+              title="Payment Report"
+              to="/paymentreport"
+              icon={<AssessmentOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />

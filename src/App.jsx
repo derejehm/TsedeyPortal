@@ -19,6 +19,10 @@ import Geography from "./pages/geography";
 import Calendar from "./pages/calendar/calendar";
 import Logout from "./components/logout";
 import Sekela from "./pages/sekela/Sekela";
+import RevenueHome from "./components/revenue/RevenueHome";
+import BillIdForm from "./components/yaya/BillIdForm";
+import PaymentSupervision from "./pages/supervision/Supervision";
+import PaymentReport from "./pages/report/PaymentReport";
 
 
 
@@ -53,7 +57,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Login />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/revenue" element={<Sekela />} />
+                <Route path="/revenue" element={<RevenueHome />} />
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/form" element={<Form />} />
@@ -64,6 +68,10 @@ function App() {
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/geography" element={<Geography />} />
                 <Route path="/logout" element={<Logout />} />
+                <Route path="/sekela" element={<Sekela />} />
+                <Route path="/yaya" element={<BillIdForm />} />
+                <Route path="/paymentsupervision" element={<PaymentSupervision />} />
+                <Route path="/paymentreport" element={<PaymentReport />} />
               </Routes>
             </main>
           </div>

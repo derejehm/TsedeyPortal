@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { Alert, AlertTitle, Box, Button, TextField, Typography } from "@mui/material";
+import { GetStudentFees } from "../../services/sekelaServices";
 
 const StudentIdForm = ({ onSubmit }) => {
   const [studentId, setStudentId] = useState('');
@@ -47,53 +47,39 @@ const StudentIdForm = ({ onSubmit }) => {
     };
 
     try {
-      const response = await axios.post(
-        "http://10.10.105.21:7271/api/Portals/GetStudentFees",
-        requestBody,
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const response = await GetStudentFees(requestBody);
 
-      if (!response.data?.status) {
+
+      if (!response.status) {
         handleApiError(response.data?.message);
         return;
       }
-      const data = response.data.data;
+      const data = response;    
 
-      console.log("Submitting Student Data:", {
-        totalOutstandingFee: data.totalOutstandingFee,
-        studentFullName: data.student.fullName,
-        transactionId: response.data.transaction_ID,
-        months: response.data.months.split(",").map((item) => item.trim()),
-        amounts: response.data.amounts.split(",").map((item) => parseFloat(item.trim())),
-        grade: data.student.grade,
-        school: data.student.school,
-      });
-  
-    
-
-      setResponseData(response.data);
-      setTotalOutstandingFee(data.totalOutstandingFee);
-      setStudentFullName(data.student.fullName);
-      setTransactionId(response.data.transaction_ID);
-      setMonths(response.data.months.split(",").map((item) => item.trim()));
-      setAmounts(response.data.amounts.split(",").map((item) => parseFloat(item.trim())));
-      setGrade(data.student.grade);
-      setSchool(data.student.school);
+      setResponseData(response);
+      setTotalOutstandingFee(data.data.totalOutstandingFee);
+      setStudentFullName(data.data.student.fullName);
+      setTransactionId(data.transaction_ID);
+      setMonths(data.months.split(",").map((item) => item.trim()));
+      setAmounts(data.amounts.split(",").map((item) => parseFloat(item.trim())));
+      setGrade(data.data.student.grade);
+      setSchool(data.data.student.school);
       setIsStudentValidated(true);
 
       // Pass the data to the parent component
-      onSubmit(studentId, 
+      onSubmit(studentId,
         {
-          totalOutstandingFee: data.totalOutstandingFee,
-          studentFullName: data.student.fullName,
-          transactionId: response.data.transaction_ID,
-          months: response.data.months.split(",").map((item) => item.trim()),
-          amounts: response.data.amounts.split(",").map((item) => parseFloat(item.trim())),
-          grade: data.student.grade,
-          school: data.student.school,
-        
-      });
+          totalOutstandingFee: data.data.totalOutstandingFee,
+          studentFullName: data.data.student.fullName,
+          transactionId: data.transaction_ID,
+          months: data.months.split(",").map((item) => item.trim()),
+          amounts: data.amounts.split(",").map((item) => parseFloat(item.trim())),
+          grade: data.data.student.grade,
+          school: data.data.student.school,
+
+        });
     } catch (err) {
+      console.error("Error Details: ", err);
       handleApiError("An error occurred while retrieving student fees.");
     }
   };

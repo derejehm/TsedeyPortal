@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { Box, Typography, TextField, Button, MenuItem, Select, InputLabel, FormControl, Alert, Divider } from "@mui/material";
 import AccountValidationForm from "./AccountValidationForm";
+import { GetPendingBill } from "../../services/yayaServices";
+import Header from "../../components/Header";
 
 const BillIdForm = () => {
   const [billId, setBillId] = useState("");
@@ -8,72 +10,16 @@ const BillIdForm = () => {
   const [error, setError] = useState(null);
   const [isBillValidated, setIsBillValidated] = useState(false);
   const [totalDue, setTotalDue] = useState(0);
-  const [accountName, setAccountName] = useState(""); // State to hold account name
-  const [accountId, setAccountId] = useState(""); // Set default account ID
+  const [accountName, setAccountName] = useState("");
+  const [accountId, setAccountId] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const requestBody = {
-      CustomerID: "1648094426",
-      Country: "ETHIOPIATEST",
-      BankID: "02",
-      UniqueID: "aba47c60-e606-11ee-b720-f51215b66fxx",
-      FunctionName: "GETNAME",
-      ISOFieldsRequest: null,
-      ISOFieldsResponse: null,
-      PaymentDetails: {
-        MerchantID: "YAYAPAYMENT",
-        FunctionName: "GETNAME",
-        AccountID: accountId,
-        Amount: "0",
-        ReferenceNumber: "aba47c60-e606-11ee-b720-f51215b66fffyuyuxx",
-      },
-      InfoFields: {
-        InfoField1: billId,
-        InfoField2: null,
-        InfoField3: null,
-      },
-      MerchantConfig: {
-        DLLCallID: "YAYAPAYMENT",
-        MerchantCode: "YAYAPAYMENT",
-        MerchantName: "YAYAPAYMENT",
-        TrxAuthontication: null,
-        MerchantProvider: "YAYA",
-        MerchantURL: "https://localhost:44396/api/dynamic/Validate",
-        MerchantReference: "{DATE}{STAN}",
-      },
-      ISOResponseFields: null,
-      ResponseDetail: null,
-      Customerdetail: {
-        CustomerID: "1648094426",
-        Country: "ETHIOPIATEST",
-        MobileNumber: "251905557471",
-        EmailID: "jack.njama@craftsilicon.com",
-        FirstName: "Jack",
-        LastName: "Njama",
-      },
-      ISORequest: null,
-      ResponseFields: null,
-      AppDetail: {
-        AppName: "TSEDEY",
-        Version: "1.8.17",
-        CodeBase: "ANDROID",
-        LATLON: "-1.2647891,36.7632677",
-        TrxSource: "APP",
-        DeviceNotificationID: "",
-        DeviceIMEI: "148e122c64a564f2",
-        DeviceIMSI: "148e122c64a564f2",
-        ConnString: "",
-      },
-    };
-
     try {
-      const response = await axios.post(
-        "http://10.10.105.21:7271/api/YAYA/GetPendingBill",
-        requestBody,
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const response = await GetPendingBill({ billId, accountId });
+
+      console.log("Response:", response);
 
       if (response.data.status !== "200") {
         setError(response.data.message || "An unknown error occurred.");
@@ -105,85 +51,90 @@ const BillIdForm = () => {
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <Box m={3}>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Header title="YAYA" subtitle="Welcome to YAYA payment" />
+      </Box>
+
       {!isBillValidated ? (
-        <form onSubmit={handleSubmit} className="w-full max-w-lg p-5">
-          <div className="flex flex-col gap-5">
-            <label
-              className="text-dark-eval-2 font-semibold"
-              htmlFor="accountId"
-            >
-              Please select Account to proceed:
-            </label>
-            <select
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <FormControl fullWidth sx={{ mb: 3 }}>
+            <InputLabel id="accountId-label">Select Account</InputLabel>
+            <Select
+              labelId="accountId-label"
               id="accountId"
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
-              className="bg-green text-white rounded-md p-3 w-full"
+              required
             >
-              <option value="" disabled>
+              <MenuItem value="" disabled>
                 Select Account
-              </option>
-              <option value="amhararbor11">
+              </MenuItem>
+              <MenuItem value="amhararbor11">
                 AMHARA NATIONAL REGIONAL STATE REVENUE AUTHORITY
-              </option>
-            </select>
+              </MenuItem>
+            </Select>
+          </FormControl>
 
-            <label
-              className="text-dark-eval-2 font-semibold mt-4"
-              htmlFor="billId"
-            >
-              Enter Bill ID:
-            </label>
-            <div className="flex gap-3 w-full">
-              <input
-                className="bg-green placeholder-white rounded-md p-3 w-full"
-                type="text"
-                id="billId"
-                placeholder="Enter Bill ID"
-                value={billId}
-                onChange={(e) => setBillId(e.target.value)}
-                required
-              />
-              <button
-                type="submit"
-                className="bg-blue-500 text-white rounded-md p-3 w-32"
-              >
-                Submit
-              </button>
-              <button
-                type="button"
-                onClick={handleClear}
-                className="bg-red-500 text-white rounded-md p-3 w-32"
-              >
-                Clear
-              </button>
-            </div>
-          </div>
-        </form>
+          <TextField
+            label="Enter Bill ID"
+            id="billId"
+            variant="outlined"
+            fullWidth
+            value={billId}
+            onChange={(e) => setBillId(e.target.value)}
+            required
+            sx={{ mb: 3 }}
+          />
+
+          <Box display="flex" justifyContent="space-between">
+            <Button type="submit" variant="contained" color="primary" sx={{ mr: 2 }}>
+              Submit
+            </Button>
+            <Button onClick={handleClear} variant="contained" color="error">
+              Clear
+            </Button>
+          </Box>
+        </Box>
       ) : null}
 
-      {error && <p className="error text-red italic font-bold">{error}</p>}
+      {error && <Alert severity="error" sx={{ mt: 3 }}>{error}</Alert>}
 
       {responseData && (
-        <div className="text-left text-md font-bold mt-5 text-dark-eval-1">
-          <p>Due Amount: {responseData.dueAmount || 0}</p>
-          <p>Account ID: {responseData.accountID}</p>
-          {responseData.extraData && (
-            <p>Total Due: {responseData.extraData.TotalDue}</p>
-          )}
-        </div>
+
+
+        <Box mt={3} p={2} border="1px solid" borderColor="grey.300" borderRadius={2}>
+          <Typography variant="h6" gutterBottom>
+            Bill Details:
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Typography variant="body1">
+            <strong> Due Amount:</strong> {responseData.dueAmount || 0}
+          </Typography>
+          <Typography variant="body1">
+            <strong>Account Number:</strong> {responseData.accountID}
+          </Typography>
+          <Typography variant="body1">
+            <strong> Total Due:</strong> {responseData.extraData.TotalDue}
+          </Typography>
+
+        </Box>
+
       )}
 
-      {isBillValidated && (
+      {isBillValidated && totalDue > 0 ? (
         <AccountValidationForm
           billId={billId}
           totalDue={totalDue}
           accountName={accountName}
           onClear={handleClear}
         />
-      )}
-    </div>
+      ) : isBillValidated && totalDue === 0 ? (
+        <Typography mt={3} color="success.main" variant="h5" fontStyle="italic">
+          Bill is already paid.
+        </Typography>
+      ) : null}
+    </Box>
   );
 };
 

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
-
+import  {SekelaSavePayment} from "../../services/sekelaServices";
 import {
   Box,
   TextField,
@@ -42,21 +41,16 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
 
     console.log("Request Payload:", requestPayload);
 
-    try {
-      const response = await axios.post(
-        "http://10.10.105.21:7271/api/Portals/SekelaSavePayment",
-        requestPayload,
-        { headers: { "Content-Type": "application/json" } }
-      );
-      setSaveResponse(response.data);
-      setSaveError(null);
-    } catch (err) {
-      console.error("Save Payment Error Details: ", err);
-      setSaveError("An error occurred while saving the payment details.");
-      setSaveResponse(null);
+   const response= await SekelaSavePayment(requestPayload);
+    if (response=="200") {
+      console.log("Response:", response);
+      setSaveResponse(response);
     }
-  };
-
+    else {
+      setSaveError(response.data.message);
+    }
+  }
+ 
   const handleClear = () => {
     setNarration("");
     setSaveResponse(null);
@@ -93,15 +87,22 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
       }}
     >
       {!saveResponse ? (
+        
         <Box
           component="form"
           onSubmit={handlePaymentSave}
           noValidate
           sx={{ display: "flex", flexDirection: "column", gap: "16px" }}
         >
+          
           <Typography variant="h6" gutterBottom>
             Save Payment
           </Typography>
+          {saveError && (
+        <Alert severity="error" sx={{ marginTop: "16px" }}>
+          {saveError}
+        </Alert>
+      )}
           <TextField
             fullWidth
             variant="outlined"
@@ -173,11 +174,7 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
           </Button>
         </Box>
       )}
-      {saveError && (
-        <Alert severity="error" sx={{ marginTop: "16px" }}>
-          {saveError}
-        </Alert>
-      )}
+    
       <Typography variant="body2" sx={{ marginTop: "16px" }}>
         Total: {paymentDetails.totalOutstandingFee}
       </Typography>

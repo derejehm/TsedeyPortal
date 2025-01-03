@@ -17,7 +17,7 @@ var timeoutId ="";
 // }
 
 export async function login(user) {
-    const { data } = await apiClient.post("/AuthenticateUser", user);
+    const { data } = await apiClient.post("Portals/AuthenticateUser", user);
     if (data.status === "200") {
         localStorage.setItem(tokenName, data.session);
         

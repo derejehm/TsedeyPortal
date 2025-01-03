@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import axios from "axios";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  Paper,
+} from "@mui/material";
+import { SavePaymentDetail } from "../../services/yayaServices";
 
 const PaymentSavingForm = ({ accountDetails, totalDue, onClear }) => {
   const [narration, setNarration] = useState("");
@@ -10,16 +18,9 @@ const PaymentSavingForm = ({ accountDetails, totalDue, onClear }) => {
   const handlePaymentSave = async (e) => {
     e.preventDefault();
 
-    // Check if accountDetails and totalDue are defined
-    // if (!accountDetails || accountDetails.totalDue === undefined) {
-    //   setSaveError("Total due amount is not defined.");
-    //   return;
-    // }
-
-    // Get current date-time in a specific format
     const currentDate = new Date().toLocaleString();
 
-    // Prepare the request body
+    // Prepare the request payload
     const requestPayload = {
       Amount: totalDue,
       Client_yaya_account: "amhararbor11",
@@ -31,21 +32,15 @@ const PaymentSavingForm = ({ accountDetails, totalDue, onClear }) => {
       Branch_ID: "0101", // Static value
       CreatedOn: currentDate,
       CreatedBy: "THEMAKER", // Static value or dynamically set
-      Bill_ID: accountDetails.billId, // Ensure Bill ID is passed here
+      Bill_ID: accountDetails.billId,
       Narration: narration,
     };
 
-    console.log("Request Body Before Saving:", requestPayload); // Log the request body
-
+    console.log("Request Payload Before Saving:", requestPayload); // Log the request payload
     setRequestBody(requestPayload); // Save to state for displaying
 
     try {
-      const response = await axios.post(
-        "http://10.10.105.21:7271/api/Portals/SavePaymentDetail",
-        requestPayload,
-        { headers: { "Content-Type": "application/json" } }
-      );
-
+      const response = await SavePaymentDetail(requestPayload);
       setSaveResponse(response.data);
       setSaveError(null);
     } catch (err) {
@@ -59,59 +54,76 @@ const PaymentSavingForm = ({ accountDetails, totalDue, onClear }) => {
     setNarration("");
     setSaveResponse(null);
     setSaveError(null);
-    onClear(); // Call clear function from parent component
+    onClear(); // Call clear function from parent
   };
 
   return (
-    <div className="p-5 bg-white rounded-lg shadow">
-      {/* Optional: Display request body for debugging */}
-      {/* <h3 className="font-bold">Request Body for Saving:</h3> */}
-      {/* <pre>{JSON.stringify(requestBody, null, 2)}</pre> */}
-
+    <Paper elevation={3} sx={{ padding: 3, marginTop: 2 }}>
       {!saveResponse ? (
-        <form onSubmit={handlePaymentSave}>
-          <div className="mb-4">
-            <input
-              className="bg-green text-white placeholder-white rounded-md p-3 w-full"
-              type="text"
-              id="narration"
-              placeholder="Enter Payment Narration"
-              value={narration}
-              onChange={(e) => setNarration(e.target.value)}
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-blue-600 text-white py-2 px-4 rounded"
-          >
-            Save Payment
-          </button>
-        </form>
+        <Box
+          component="form"
+          onSubmit={handlePaymentSave}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <Typography variant="h6" color="text.primary">
+            Enter Payment Narration
+          </Typography>
+
+          <TextField
+            label="Narration"
+            variant="outlined"
+            fullWidth
+            value={narration}
+            onChange={(e) => setNarration(e.target.value)}
+            required
+          />
+
+          <Box display="flex" justifyContent="space-between">
+            <Button type="submit" variant="contained" color="primary">
+              Save Payment
+            </Button>
+            <Button
+              type="button"
+              variant="outlined"
+              color="error"
+              onClick={handleClear}
+            >
+              Clear
+            </Button>
+          </Box>
+        </Box>
       ) : (
-        <div className="text-left text-md font-bold mt-5">
+        <Box textAlign="center" mt={2}>
           {saveResponse.status === "200" ? (
-            <h3 className="text-green1 text-xl font-bold italic">
+            <Alert severity="success" sx={{ mb: 2 }}>
               {saveResponse.message}
-            </h3>
+            </Alert>
           ) : (
-            <h3 className="text-red text-xl font-bold italic">
+            <Alert severity="error" sx={{ mb: 2 }}>
               {saveResponse.message}
-            </h3>
+            </Alert>
           )}
-          <button
-            className="text-white bg-cyan-600 mt-2 py-2 px-4 rounded"
+
+          <Button
+            variant="contained"
+            color="secondary"
             onClick={handleClear}
           >
             Clear
-          </button>
-        </div>
+          </Button>
+        </Box>
       )}
-      {saveError && <p className="error text-red">{saveError}</p>}
-      <p className="mt-1 font-xs text-dark-eval-2">
-        Total Due Amount: {totalDue}
-      </p>
-    </div>
+
+      {saveError && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {saveError}
+        </Alert>
+      )}
+    </Paper>
   );
 };
 
