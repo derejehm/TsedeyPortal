@@ -1,5 +1,5 @@
 import { Box, IconButton, useTheme, Divider, MenuItem, Menu, Avatar, ListItemIcon, Tooltip } from "@mui/material";
-import { useContext, React, useState, useEffect } from "react";
+import { useContext, React, useState } from "react";
 import { ColorModeContext, tokens } from "../../theme";
 import InputBase from "@mui/material/InputBase";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
@@ -11,18 +11,15 @@ import SearchIcon from "@mui/icons-material/Search";
 import Settings from '@mui/icons-material/Settings';
 import PersonAdd from '@mui/icons-material/PersonAdd';
 import Logout from '@mui/icons-material/Logout';
-
-// import { useNavigate } from "react-router-dom";
-import { logout } from "../../services/userServices";
-import { getUser } from "../../services/userServices";
+import { Form, useRouteLoaderData } from "react-router-dom";
 
 const Topbar = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [user, setUser] = useState(null);
   const open = Boolean(anchorEl);
+  const session = useRouteLoaderData('root');
   // const navigator = useNavigate();
 
   const handleClick = (event) => {
@@ -33,24 +30,8 @@ const Topbar = () => {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    logout();
-    window.location = "/";
-  };
-
-  useEffect(() => {
-
-    try {
-      const session = getUser();
-      setUser(session)
-    } catch (err) {
-      console.log(err)
-    }
-
-  }, []);
-
   return (
-    user ?
+    session ?
       <Box display="flex" justifyContent="space-between" p={2}>
         {/* SEARCH BAR */}
         <Box
@@ -153,12 +134,14 @@ const Topbar = () => {
               </ListItemIcon>
               Settings
             </MenuItem>
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon>
-                <Logout fontSize="small" />
-              </ListItemIcon>
-              Logout
-            </MenuItem>
+            <Form action="/logout" method="post">
+              <MenuItem  >
+                <ListItemIcon>
+                  <Logout fontSize="small" />
+                </ListItemIcon>
+               <button>Logout</button> 
+              </MenuItem>
+            </Form>
           </Menu>
 
         </Box>

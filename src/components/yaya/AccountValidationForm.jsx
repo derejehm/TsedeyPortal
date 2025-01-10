@@ -19,15 +19,22 @@ const AccountValidationForm = ({ billId, totalDue, accountName, onClear }) => {
     e.preventDefault();
 
     try {
-      const response = await GetCustomerDetail({ billId, accountNumber });
+      const response = await GetCustomerDetail({ billId, accountNumber });      
 
-      console.log("Account Validation Response:", response.data);
-      setAccountResponse(response.data);
-      setError(null);
-      setAccountNumber(""); // Clear input field after submission
+        console.log("Response:", response);
+      if (response.data.message !== "Success" ) {
+        setError(response.data.message);
+      }else{
+        setAccountResponse(response.data);
+        console.log("Response:", response);
+        setError(null);
+        setAccountNumber("");
+      }
+
+    
+    // Clear input field after submission
     } catch (err) {
-      console.error("Error Details: ", err);
-      setError("An error occurred while validating the account number.");
+     console.log("Error Details: ", err); 
       setAccountResponse(null);
     }
   };

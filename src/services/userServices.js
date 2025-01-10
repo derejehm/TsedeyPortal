@@ -1,45 +1,32 @@
+import { redirect } from "react-router-dom";
 import apiClient from "../utils/api-client";
 
 const tokenName = "session";
-var timeoutId ="";
 
-
-// export async function signup(user, profile) {
-//     const body = new FormData();
-//     body.append("name", user.name);
-//     body.append("email", user.email);
-//     body.append("password", user.password);
-//     body.append("deliveryAddress", user.deliveryAddress);
-//     body.append("profilePic", profile);
-
-//     const { data } = await apiClient.post("/user/signup", body);
-//     localStorage.setItem(tokenName, data.token);
-// }
+export function getSessionDuration() {
+    const storedExpirationDate = localStorage.getItem('expiration');
+    const expirationDate = new Date(storedExpirationDate);
+    const now = new Date();
+    const duration = expirationDate.getTime() - now.getTime();
+    return duration;
+}
 
 export async function login(user) {
     const { data } = await apiClient.post("Portals/AuthenticateUser", user);
     if (data.status === "200") {
         localStorage.setItem(tokenName, data.session);
-        
+        const expiration = new Date();
+        expiration.setHours(expiration.getHours() + 1);
+        localStorage.setItem('expiration', expiration.toISOString());
     }
-
-    const id = window.setTimeout(() => {
-        logout();
-      }, 300000);
-
-      timeoutId=id; 
-
     return data;
-
 }
 
 
 export function logout() {
-   
     localStorage.removeItem(tokenName);
-    if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+    localStorage.removeItem('expiration');
+    return redirect('/login')
 }
 
 export function getUser() {
@@ -52,5 +39,24 @@ export function getUser() {
 }
 
 export function getSession() {
-    return localStorage.getItem(tokenName);
+    const session = localStorage.getItem(tokenName);
+
+    if (!session) {
+        return null;
+    }
+
+    const sessionDuration = getSessionDuration();
+    if (sessionDuration < 0) {
+        return 'EXPIRED'
+    }
+    return session
+}
+
+export function checkAuthLoader() {
+    const session = getSession();
+
+    if (!session) {
+        return redirect("/login");
+    }
+
 }

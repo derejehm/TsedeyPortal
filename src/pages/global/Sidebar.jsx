@@ -46,6 +46,7 @@ const Sidebar = () => {
 
   return (
     <Box
+  
       sx={{
         "& .pro-sidebar-inner": {
           background: `${colors.primary[400]} !important`,
@@ -122,7 +123,7 @@ const Sidebar = () => {
           <Box paddingLeft={isCollapsed ? undefined : "10%"}>
             <Item
               title="Dashboard"
-              to="/dashboard"
+              to="/"
               icon={<HomeOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -142,13 +143,13 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
+            {/* <Item
               title="Water"
               to="/contacts"
               icon={<WaterDropOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
-            />
+            /> */}
             <Item
               title="Supervision"
               to="/paymentsupervision"

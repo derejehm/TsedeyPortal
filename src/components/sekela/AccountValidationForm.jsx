@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import PaymentSavingForm from "./PaymentSavingForm"; // Import PaymentSavingForm
+import React, {  useState } from "react";
 import {
   Box,
   TextField,
@@ -22,7 +20,7 @@ const AccountValidationForm = ({ onSubmit, onClear }) => {
 
     try {
       const response = await GetCustomerDetail(accountNumber);
-      console.log("Response:", response);
+   
 
       if (response.data.status !== "200") {
         
@@ -49,10 +47,10 @@ const AccountValidationForm = ({ onSubmit, onClear }) => {
     onClear(); // Call clear function passed from parent
   };
 
-  const canShowPaymentSavingForm =
-    accountResponse &&
-    accountResponse.status === "200" &&
-    parseFloat(accountResponse.extraData?.AvailableBalance) > 0;
+  // const canShowPaymentSavingForm =
+  //   accountResponse &&
+  //   accountResponse.status === "200" &&
+  //   parseFloat(accountResponse.extraData?.AvailableBalance) > 0;
 
   return (
     <Box >

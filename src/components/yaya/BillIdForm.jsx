@@ -3,6 +3,7 @@ import { Box, Typography, TextField, Button, MenuItem, Select, InputLabel, FormC
 import AccountValidationForm from "./AccountValidationForm";
 import { GetPendingBill } from "../../services/yayaServices";
 import Header from "../../components/Header";
+import yayaLogo from "../../assets/images/yaya.png"
 
 const BillIdForm = () => {
   const [billId, setBillId] = useState("");
@@ -19,7 +20,7 @@ const BillIdForm = () => {
     try {
       const response = await GetPendingBill({ billId, accountId });
 
-      console.log("Response:", response);
+     // console.log("Response:", response);
 
       if (response.data.status !== "200") {
         setError(response.data.message || "An unknown error occurred.");
@@ -52,8 +53,17 @@ const BillIdForm = () => {
 
   return (
     <Box m={3}>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
+      {/* <Box display="flex" justifyContent="space-between" alignItems="center">
         <Header title="YAYA" subtitle="Welcome to YAYA payment" />
+      </Box> */}
+
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+      <Header title="YAYA" subtitle="Welcome to YAYA payment" />
+        <img
+          src={yayaLogo}
+          alt="Yaya logo"
+          height="100px"
+        />
       </Box>
 
       {!isBillValidated ? (

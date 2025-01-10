@@ -1,30 +1,36 @@
 import React from "react";
 import { Card, CardContent, Typography, Grid,useTheme,Box } from "@mui/material";
-import { Home, Settings, Info, ContactMail, } from "@mui/icons-material";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
 import  sekelaLogo from "../../assets/images/sekela.png";
+import yayaLogo from "../../assets/images/yaya.png"
+import {  useNavigate } from "react-router-dom";
+
 
 export default function RevenueHome() {
       const theme = useTheme();
       const colors = tokens(theme.palette.mode);
 
+      const navigate=useNavigate();
+
+  
+
    // Array of menu items with title and image URL
   const menuItems = [
     { 
       title: "SEKELA", 
-      image:"https://via.placeholder.com/100?text=SEKELA",
-      onClick: () =>  window.location = "/sekela"
+      image:sekelaLogo,
+      onClick: () =>  navigate( "/sekela")
     },
     { 
       title: "YAYA", 
-      image: "https://via.placeholder.com/100?text=YAYA", 
-        onClick: () =>  window.location = "/yaya"
+      image: yayaLogo, 
+        onClick: () =>  navigate( "/yaya")
     },
     { 
-      title: "About Us", 
+      title: "EthioDash", 
       image: "https://via.placeholder.com/100?text=ETHIODASH", 
-      onClick: () => alert("About Us clicked") 
+      onClick: () => alert("EthioDash clicked") 
     },
   
   ];
@@ -56,8 +62,8 @@ export default function RevenueHome() {
             }}
           >
             <Box
-              component="img"
-              src={item.image}
+              component="img"              
+              src={item.image }
               alt={item.title}
               sx={{
                 width: 100,

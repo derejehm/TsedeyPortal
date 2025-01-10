@@ -1,12 +1,6 @@
-import { useEffect, useState } from "react";
-import Topbar from "./pages/global/Topbar";
-import Sidebar from "./pages/global/Sidebar";
-import { CssBaseline, ThemeProvider } from "@mui/material";
-import { ColorModeContext, useMode } from "./theme";
-import { getUser } from "./services/userServices";
-import { Routes, Route } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Dashboard from "./pages/dashboard";
-import Team from "./pages/team";
+// import Team from "./pages/team";
 import Invoices from "./pages/invoices";
 import Contacts from "./pages/contacts";
 import Bar from "./pages/bar";
@@ -17,71 +11,52 @@ import FAQ from "./pages/faq";
 import Login from "./pages/login";
 import Geography from "./pages/geography";
 import Calendar from "./pages/calendar/calendar";
-import Logout from "./components/logout";
 import Sekela from "./pages/sekela/Sekela";
 import RevenueHome from "./components/revenue/RevenueHome";
 import BillIdForm from "./components/yaya/BillIdForm";
 import PaymentSupervision from "./pages/supervision/Supervision";
 import PaymentReport from "./pages/report/PaymentReport";
+import NotFoundPage from "./pages/errorPage/NotFoundPage ";
+import RootLayout from "./pages/Root.js";
+import {  getSession } from "./services/userServices.js";
+import { logout as  logoutAction } from "./services/userServices.js";
 
 
+
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    errorElement: <NotFoundPage />,
+    id: 'root',
+    loader: getSession,
+    children: [
+      { index: true, element: <Dashboard />  },
+      { path: "login", element: <Login /> },      
+      { path: "revenue", element: <RevenueHome /> },
+      { path: "contacts", element: <Contacts /> },
+      { path: "invoices", element: <Invoices /> },
+      { path: "form", element: <Form /> },
+      { path: "bar", element: <Bar /> },
+      { path: "pie", element: <Pie /> },
+      { path: "line", element: <Line /> },
+      { path: "faq", element: <FAQ /> },
+      { path: "calendar", element: <Calendar /> },
+      { path: "geography", element: <Geography /> },
+      { path: "logout", action: logoutAction  },
+      { path: "sekela", element: <Sekela /> },
+      { path: "yaya", element: <BillIdForm />  },
+      { path: "paymentsupervision", element: <PaymentSupervision /> },
+      { path: "paymentreport", element: <PaymentReport />  },
+      // 404 Catch-All Route
+      { path: "*", element: <NotFoundPage /> },
+    ],
+  },
+]);
 
 function App() {
-
-  const [theme, colorMode] = useMode();
-  const [isSidebar, setIsSidebar] = useState(true);
-  const [user, setUser] = useState(null)
-
-
-  useEffect(() => {
-    try {
-      const session = getUser();
-      setUser(session)
-    } catch (err) {
-      console.log(err)
-    }
-  }, []);
-
-
-
-  return (
-
-    <ColorModeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {user ? (
-          <div className="app">
-            <Sidebar isSidebar={isSidebar} />
-            <main className="content">
-              <Topbar setIsSidebar={setIsSidebar} />
-              <Routes>
-                <Route path="/" element={<Login />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/revenue" element={<RevenueHome />} />
-                <Route path="/contacts" element={<Contacts />} />
-                <Route path="/invoices" element={<Invoices />} />
-                <Route path="/form" element={<Form />} />
-                <Route path="/bar" element={<Bar />} />
-                <Route path="/pie" element={<Pie />} />
-                <Route path="/line" element={<Line />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/geography" element={<Geography />} />
-                <Route path="/logout" element={<Logout />} />
-                <Route path="/sekela" element={<Sekela />} />
-                <Route path="/yaya" element={<BillIdForm />} />
-                <Route path="/paymentsupervision" element={<PaymentSupervision />} />
-                <Route path="/paymentreport" element={<PaymentReport />} />
-              </Routes>
-            </main>
-          </div>
-        ) :
-          <Login />
-        }
-      </ThemeProvider>
-    </ColorModeContext.Provider>
-
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

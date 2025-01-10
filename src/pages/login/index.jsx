@@ -1,10 +1,10 @@
 import { Typography, Box, useTheme, TextField, FormControlLabel, Checkbox, Link, Grid, Container, Button, } from "@mui/material";
 import { tokens } from "../../theme";
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import logo from "../../assets/logo.png"
 import Topbar from "../global/Topbar";
-import { login } from "../../services/userServices"
-import { useForm } from 'react-hook-form';
+import { login, logout } from "../../services/userServices"
+import { set, useForm } from 'react-hook-form';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 
@@ -14,6 +14,14 @@ const Login = () => {
     const theme = useTheme('light');
     const colors = tokens(theme.palette.mode);
     const [otherError, setOtherError] = useState("");
+
+    const session = localStorage.getItem("session");
+    useEffect(() => {
+        if(session){
+            window.location = "/";
+        }
+
+    }, [session]);
 
     const {
         register,
@@ -30,10 +38,8 @@ const Login = () => {
 
         try {
             var res = await login(apiData)
-            console.log(res);
-
             if (res.status === "200") {
-                window.location = "/dashboard";
+                window.location = "/";
                 setOtherError("");
             } else {
                 setOtherError("Invalid user name or password!");
@@ -47,9 +53,8 @@ const Login = () => {
     };
     return (
 
-        <Container component="main" maxWidth="xs">
+        <Container component="main" >
             <Topbar />
-
             <Box
                 sx={{
                     marginTop: 8,
