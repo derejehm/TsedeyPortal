@@ -1,5 +1,6 @@
 import { redirect } from "react-router-dom";
 import apiClient from "../utils/api-client";
+import { DataUsageRounded } from "@mui/icons-material";
 
 const tokenName = "session";
 
@@ -13,8 +14,10 @@ export function getSessionDuration() {
 
 export async function login(user) {
     const { data } = await apiClient.post("Portals/AuthenticateUser", user);
+    
     if (data.status === "200") {
         localStorage.setItem(tokenName, data.session);
+        localStorage.setItem('username', user.User_ID);        
         const expiration = new Date();
         expiration.setHours(expiration.getHours() + 1);
         localStorage.setItem('expiration', expiration.toISOString());
@@ -22,10 +25,23 @@ export async function login(user) {
     return data;
 }
 
+export async function getUserDetails() {
+
+    console.log(localStorage.getItem('username'));
+   const userRequest= {
+        "OperatorID" : localStorage.getItem('username')
+    }
+    const { data } = await apiClient.post("/Portal/GetUser", userRequest);
+    
+    return data;
+}
+
+
 
 export function logout() {
     localStorage.removeItem(tokenName);
     localStorage.removeItem('expiration');
+    localStorage.removeItem('username');
     return redirect('/login')
 }
 

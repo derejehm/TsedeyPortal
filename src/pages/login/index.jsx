@@ -17,10 +17,9 @@ const Login = () => {
 
     const session = localStorage.getItem("session");
     useEffect(() => {
-        if(session){
+        if (session) {
             window.location = "/";
         }
-
     }, [session]);
 
     const {
@@ -31,7 +30,7 @@ const Login = () => {
 
     const onSubmit = async (data) => {
         const apiData = {
-            Branch_ID: data.branch,
+            Branch_ID: '',
             User_ID: data.username,
             Password: data.password,
         };
@@ -66,52 +65,31 @@ const Login = () => {
                 <img src={logo} width="500px" alt="Logo" />
                 <Typography component="h1" variant="h5">
                     Sign in
-
                 </Typography>
                 {otherError && (<Stack sx={{ width: '100%' }} spacing={2} m={5}>
                     <Alert severity="error">{otherError}</Alert>
                 </Stack>)}
 
                 <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
-                    <Box justifyContent="space-between">
-                        <TextField
-                            sx={{ pr: "10px" }}
-                            margin="normal"
-                            required
-                            id="branch"
-                            label="Branch"
-                            name="branch"
-                            autoComplete="branch"
-                            autoFocus
-                            {...register('branch', {
-                                required: 'Branch is required',
-                                minLength: {
-                                    value: 4,
-                                    message: 'Branch must be at least 4 characters',
-                                },
-                            })}
-                            error={Boolean(errors.username)}
-                            helperText={errors.username?.message}
-                        />
-                        <TextField
-                            margin="normal"
-                            required
-                            id="username"
-                            label="CBS Username"
-                            name="username"
-                            autoComplete="username"
-                            autoFocus
-                            {...register('username', {
-                                required: 'Username is required',
-                                minLength: {
-                                    value: 4,
-                                    message: 'Username must be at least 4 characters',
-                                },
-                            })}
-                            error={Boolean(errors.username)}
-                            helperText={errors.username?.message}
-                        />
-                    </Box>
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="username"
+                        label="CBS Username"
+                        name="username"
+                        autoComplete="username"
+                        autoFocus
+                        {...register('username', {
+                            required: 'Username is required',
+                            minLength: {
+                                value: 4,
+                                message: 'Username must be at least 4 characters',
+                            },
+                        })}
+                        error={Boolean(errors.username)}
+                        helperText={errors.username?.message}
+                    />
                     <TextField
                         margin="normal"
                         required

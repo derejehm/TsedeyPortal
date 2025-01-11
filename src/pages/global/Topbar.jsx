@@ -6,10 +6,7 @@ import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-// import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import Settings from '@mui/icons-material/Settings';
-import PersonAdd from '@mui/icons-material/PersonAdd';
 import Logout from '@mui/icons-material/Logout';
 import { Form, useRouteLoaderData } from "react-router-dom";
 
@@ -74,7 +71,7 @@ const Topbar = () => {
                 aria-haspopup="true"
                 aria-expanded={open ? 'true' : undefined}
               >
-                <Avatar sx={{ width: 32, height: 32 }}>M</Avatar>
+                <Avatar sx={{ width: 32, height: 32 }}>{localStorage.getItem('username')?.charAt(0)?.toLocaleUpperCase()}</Avatar>
               </IconButton>
             </Tooltip>
           </Box>
@@ -121,19 +118,7 @@ const Topbar = () => {
             <MenuItem onClick={handleClose}>
               <Avatar /> My account
             </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleClose}>
-              <ListItemIcon>
-                <PersonAdd fontSize="small" />
-              </ListItemIcon>
-              Add another account
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              <ListItemIcon>
-                <Settings fontSize="small" />
-              </ListItemIcon>
-              Settings
-            </MenuItem>
+            <Divider />        
             <Form action="/logout" method="post">
               <MenuItem  >
                 <ListItemIcon>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
@@ -16,6 +16,7 @@ import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
+import { getUserDetails } from "../../services/userServices";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -35,15 +36,27 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
   );
 };
 
-const Sidebar = () => {
+const Sidebar = (user) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
+  const [userData, setUserData] = useState('');
+
+
+  useEffect(() => {
+    getUserDetails().then((data) => {
+      if (data.status === '200') {
+        console.log(data);
+        setUserData(data);
+      }
+    })
+
+  }, []);
 
   return (
     <Box
-  
+
       sx={{
         "& .pro-sidebar-inner": {
           background: `${colors.primary[400]} !important`,
@@ -81,7 +94,7 @@ const Sidebar = () => {
                 ml="15px"
               >
                 <Typography variant="h3" color={colors.grey[100]}>
-                  ADMINIS
+                  TSEDEY
                 </Typography>
                 <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
                   <MenuOutlinedIcon />
@@ -108,10 +121,13 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0" }}
                 >
-                 Dereje H
+                  {userData.extraData?.FirstName}
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
-                  Super Admin
+                  {userData.extraData?.RoleType?.toUpperCase()}
+                </Typography>
+                <Typography variant="h5" color={colors.greenAccent[500]}>
+                  Branch : {userData.extraData?.OurBranchID}
                 </Typography>
               </Box>
             </Box>
@@ -154,7 +170,7 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-             <Item
+            <Item
               title="Payment Report"
               to="/paymentreport"
               icon={<AssessmentOutlinedIcon />}
