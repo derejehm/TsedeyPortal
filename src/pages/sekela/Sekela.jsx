@@ -2,7 +2,8 @@ import React from "react";
 import sekelaImage from "../../assets/images/sekela.png";
 import { Box } from "@mui/material";
 import Header from "../../components/Header";
-import PaymentStep from "../../components/sekela/PaymentSteps";
+import StudentIdForm from '../../components/sekela/StudentIdForm.jsx'
+
 
 const Sekela = () => {
   return (
@@ -15,9 +16,8 @@ const Sekela = () => {
           height="100px"
         />
       </Box>
-      <Box>
-        <PaymentStep />
-        {/* <StudentIdForm /> */}
+      <Box>   
+        <StudentIdForm />
       </Box>
 
 

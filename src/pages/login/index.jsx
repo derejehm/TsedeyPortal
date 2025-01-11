@@ -3,7 +3,7 @@ import { tokens } from "../../theme";
 import React, { useEffect, useState } from "react"
 import logo from "../../assets/logo.png"
 import Topbar from "../global/Topbar";
-import { login, logout } from "../../services/userServices"
+import { login } from "../../services/userServices"
 import { set, useForm } from 'react-hook-form';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';

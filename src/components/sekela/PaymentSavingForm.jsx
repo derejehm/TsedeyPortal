@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import  {SekelaSavePayment} from "../../services/sekelaServices";
+import axios from "axios";
 import {
   Box,
   TextField,
   Button,
   Typography,
+  Paper,
   Alert,
-  AlertTitle,
-  Table, TableBody, TableCell, TableHead, TableRow, Paper
+  Divider,
 } from "@mui/material";
 
 const PaymentSavingForm = ({ paymentDetails, onClear }) => {
@@ -41,16 +41,21 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
 
     console.log("Request Payload:", requestPayload);
 
-   const response= await SekelaSavePayment(requestPayload);
-    if (response=="200") {
-      console.log("Response:", response);
-      setSaveResponse(response);
+    try {
+      const response = await axios.post(
+        "http://10.10.105.21:7271/api/Portals/SekelaSavePayment",
+        requestPayload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      setSaveResponse(response.data);
+      setSaveError(null);
+    } catch (err) {
+      console.error("Save Payment Error Details: ", err);
+      setSaveError("An error occurred while saving the payment details.");
+      setSaveResponse(null);
     }
-    else {
-      setSaveError(response.data.message);
-    }
-  }
- 
+  };
+
   const handleClear = () => {
     setNarration("");
     setSaveResponse(null);
@@ -78,105 +83,75 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
   };
 
   return (
-    <Paper
-      elevation={3}
-      sx={{
-        padding: "16px",
-        margin: "16px auto",
-
-      }}
-    >
+    <Paper elevation={3} sx={{ padding: 4, borderRadius: 2, maxWidth: 600, margin: "auto" }}>
       {!saveResponse ? (
-        
-        <Box
-          component="form"
-          onSubmit={handlePaymentSave}
-          noValidate
-          sx={{ display: "flex", flexDirection: "column", gap: "16px" }}
-        >
-          
+        <form onSubmit={handlePaymentSave}>
           <Typography variant="h6" gutterBottom>
-            Save Payment
+            Save Payment Details
           </Typography>
-          {saveError && (
-        <Alert severity="error" sx={{ marginTop: "16px" }}>
-          {saveError}
-        </Alert>
-      )}
           <TextField
             fullWidth
+            label="Narration"
             variant="outlined"
-            label="Payment Narration"
-            placeholder="Enter Payment Narration"
             value={narration}
             onChange={(e) => setNarration(e.target.value)}
             required
+            sx={{ marginBottom: 2 }}
           />
-          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              sx={{ width: "48%" }}
-            >
-              Save Payment
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              sx={{ width: "48%" }}
-              onClick={handleClear}
-            >
-              Clear
-            </Button>
-          </Box>
-          <Box>
-            <Typography variant="subtitle1" gutterBottom>
-              Please reivew before continue Preview:
-            </Typography>
-       
-              <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-                <Table sx={{ minWidth: 650 }}>
-           
-                  <TableBody>
-                    {Object.entries(requestPayloadPreview).map(([key, value]) => (
-                      <TableRow key={key}>
-                        <TableCell>{key.replace(/_/g, ' ')}</TableCell>
-                        <TableCell>{value}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Paper>
-           
-          </Box>
-        </Box>
-      ) : (
-        <Box>
-          <Alert
-            severity={saveResponse.status === "200" ? "success" : "error"}
-            sx={{ marginBottom: "16px" }}
-          >
-            <AlertTitle>
-              {saveResponse.status === "200"
-                ? "Payment Saved Successfully"
-                : "Payment Save Failed"}
-            </AlertTitle>
-            {saveResponse.message}
-          </Alert>
           <Button
+            type="submit"
             variant="contained"
             color="primary"
+            fullWidth
+            sx={{ marginBottom: 2 }}
+          >
+            Save Payment
+          </Button>
+          <Divider sx={{ marginY: 2 }} />
+          <Typography variant="subtitle1" gutterBottom>
+            Request Payload Preview:
+          </Typography>
+          <Box
+            component="pre"
+            sx={{
+              backgroundColor: "#f4f4f4",
+              padding: 2,
+              borderRadius: 1,
+              overflow: "auto",
+              maxHeight: 200,
+            }}
+          >
+            <code>{JSON.stringify(requestPayloadPreview, null, 2)}</code>
+          </Box>
+        </form>
+      ) : (
+        <Box textAlign="center">
+          {saveResponse.status === "200" ? (
+            <Alert severity="success" sx={{ marginBottom: 2 }}>
+              {saveResponse.message}
+            </Alert>
+          ) : (
+            <Alert severity="error" sx={{ marginBottom: 2 }}>
+              {saveResponse.message}
+            </Alert>
+          )}
+          <Button
+            variant="contained"
+            color="secondary"
             onClick={handleClear}
-            sx={{ marginTop: "16px" }}
+            fullWidth
           >
             Clear
           </Button>
         </Box>
       )}
-    
-      <Typography variant="body2" sx={{ marginTop: "16px" }}>
-        Total: {paymentDetails.totalOutstandingFee}
+      {saveError && (
+        <Alert severity="error" sx={{ marginTop: 2 }}>
+          {saveError}
+        </Alert>
+      )}
+      <Typography variant="body2" color="text.secondary" align="right" sx={{ marginTop: 2 }}>
+        Total Outstanding Fee: {paymentDetails.totalOutstandingFee}
       </Typography>
     </Paper>
   );

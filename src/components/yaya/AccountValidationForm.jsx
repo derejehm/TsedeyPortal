@@ -56,9 +56,11 @@ const AccountValidationForm = ({ billId, totalDue, accountName, onClear }) => {
   const availableBalance =
     parseFloat(accountResponse?.extraData?.["AvailableBalance"]) || 0;
 
+ 
+
   return (
     <Box mt={3} p={2}>
-      {!accountResponse ? ( // Hide the form if accountResponse is available
+      {(!accountResponse || totalDue >= availableBalance ) ? ( // Hide the form if accountResponse is available
         <Box
           component="form"
           onSubmit={handleAccountSubmit}
@@ -104,7 +106,7 @@ const AccountValidationForm = ({ billId, totalDue, accountName, onClear }) => {
         </Alert>
       )}
 
-      {accountResponse && (
+      {accountResponse  && (
         <Box mt={3} p={2} border="1px solid" borderColor="grey.300" borderRadius={2}>
           <Typography variant="h6" gutterBottom>
             Customer Details:
@@ -122,9 +124,12 @@ const AccountValidationForm = ({ billId, totalDue, accountName, onClear }) => {
           <Typography variant="body1" color={totalDue >= availableBalance ? "error.main" : "text.primary"}>
             <strong>Available Balance:</strong> {availableBalance.toFixed(2)}
             {totalDue >= availableBalance && (
+              <>
               <Typography component="span" sx={{ fontStyle: "italic" }}>
                 {" - Insufficient Balance"}
               </Typography>
+              
+              </>
             )}
           </Typography>
         </Box>
