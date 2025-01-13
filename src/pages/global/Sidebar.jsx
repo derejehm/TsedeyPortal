@@ -150,7 +150,7 @@ const Sidebar = (user) => {
               Payment
             </Typography>
             <Item
-              title="Revenue"
+              title="Payments"
               to="/Revenue"
               icon={<PaymentsOutlinedIcon />}
               selected={selected}
@@ -172,7 +172,7 @@ const Sidebar = (user) => {
             />}
            
             <Item
-              title="Payment Report"
+              title="Report"
               to="/paymentreport"
               icon={<AssessmentOutlinedIcon />}
               selected={selected}

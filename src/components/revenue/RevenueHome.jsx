@@ -38,7 +38,7 @@ export default function RevenueHome() {
   return (
     <Box m="20px">
              <Box display="flex" justifyContent="space-between" alignItems="center">
-             <Header title="REVENUE" subtitle="Welcome to revenue payment" />
+             <Header title="PAYMENTS" subtitle="Welcome to tsedey payment" />
              </Box>
     <Grid container spacing={2}  >
       {menuItems.map((item, index) => (
