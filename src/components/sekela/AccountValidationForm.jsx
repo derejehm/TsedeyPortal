@@ -99,11 +99,8 @@ const AccountValidationForm = ({
       }else{
         setError(response.data.message);
 
-      }
-
-      
-      
-     
+      }   
+           
     } catch (err) {
       console.error("Error Details: ", err);
       setError("An error occurred while validating the account number.");
@@ -132,7 +129,7 @@ const AccountValidationForm = ({
    
   return (
     <Box sx={{ p: 3 }}>
-      {(accountResponse && accountResponse.status ==="200")   ? null : (
+      {(accountResponse && accountResponse.status ==="200" && totalOutstandingFee < availableBalance)   ? null : (
         <Paper elevation={3} sx={{ p: 4, mb: 3 }}>
           <form onSubmit={handleAccountSubmit}>
             <Typography variant="h6" sx={{ mb: 2 }}>
