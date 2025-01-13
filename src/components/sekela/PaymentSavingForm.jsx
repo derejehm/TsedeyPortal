@@ -72,7 +72,7 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
     To_Account: "2305130003340",
     Customer_Phone: paymentDetails.phoneNumber,
     Branch_ID: "0101",
-    Created_By: "Maker",
+    Created_By:localStorage.getItem("username"),
     Created_On: new Date().toLocaleString(),
     Narration: narration,
     Transaction_ID: paymentDetails.transactionId,
