@@ -37,8 +37,8 @@ const PaymentSupervision = () => {
   const rowsPerPage = 4;
 
   const fetchPendingPayments = async () => {
-    const branchID = "0101";
-    const userID = paymentType === "Yaya" ? "Dawit" : "test";
+    const branchID = localStorage.getItem('branch');
+    const userID = localStorage.getItem("username");
     const requestBody = { BranchID: branchID, User_ID: userID };
 
     let endpoint;
@@ -115,7 +115,7 @@ const PaymentSupervision = () => {
           InfoField16: payment.narration,
           InfoField17: payment.branch_ID,
           InfoField18: payment.createdOn.toString(),
-          InfoField19: "Checker",
+          InfoField19: localStorage.getItem("username"),
         },
         MerchantConfig: {
           DLLCallID: "YAYAPAYMENT",
@@ -160,7 +160,7 @@ const PaymentSupervision = () => {
         Customer_Account: payment.customer_Account,
         To_Account: payment.to_Account,
         Branch_ID: payment.branch_ID,
-        Created_By: "Checker",
+        Created_By: localStorage.getItem("username"),
         Created_On: payment.created_On,
         Narration: payment.narration,
         Transaction_ID: payment.transaction_ID,
@@ -211,7 +211,7 @@ const PaymentSupervision = () => {
         Client_yaya_account: payment.client_yaya_account,
         Branch_ID: payment.branch_ID,
         RejectedON: new Date().toLocaleString(),
-        RejectedBy: "Rejecter",
+        RejectedBy: localStorage.getItem("username"),
       };
     } else if (paymentType === "Sekela") {
       requestBody = {
@@ -220,7 +220,7 @@ const PaymentSupervision = () => {
         To_Account: payment.to_Account,
         Branch_ID: payment.branch_ID,
         RejectedON: new Date().toLocaleString(),
-        RejectedBy: "Rejecter",
+        RejectedBy: localStorage.getItem("username"),
       };
     } else {
       return; // Exit if no valid payment type is found

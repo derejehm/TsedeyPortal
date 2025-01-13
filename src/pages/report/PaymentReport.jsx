@@ -76,8 +76,8 @@ const PaymentReport = () => {
   useEffect(() => {
     const fetchApprovedPayments = async () => {
       const requestBody = {
-        Branch_ID: "0101",
-        User_ID: paymentType === "Yaya" ? "Dawit" : "Checker",
+        Branch_ID:localStorage.getItem('branch'),
+        User_ID: localStorage.getItem('username'),
       };
       const endpoint =
         paymentType === "Yaya"

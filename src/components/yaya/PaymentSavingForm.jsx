@@ -29,9 +29,9 @@ const PaymentSavingForm = ({ accountDetails, totalDue, onClear }) => {
       Customer_Name: accountDetails.customerName,
       Customer_Phone_Number: accountDetails.phoneNumber,
       Transfer_To: "1201160002517", // Static value
-      Branch_ID: "0101", // Static value
+      Branch_ID: localStorage.getItem('branch'), // Static value
       CreatedOn: currentDate,
-      CreatedBy:localStorage.getItem("username"), // Static value or dynamically set
+      CreatedBy: localStorage.getItem("username"), // Static value or dynamically set
       Bill_ID: accountDetails.billId,
       Narration: narration,
     };

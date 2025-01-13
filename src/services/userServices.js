@@ -17,7 +17,7 @@ export async function login(user) {
     
     if (data.status === "200") {
         localStorage.setItem(tokenName, data.session);
-        localStorage.setItem('username', user.User_ID);        
+        localStorage.setItem('username', user.User_ID);      
         const expiration = new Date();
         expiration.setHours(expiration.getHours() + 1);
         localStorage.setItem('expiration', expiration.toISOString());
@@ -32,6 +32,7 @@ export async function getUserDetails() {
         "OperatorID" : localStorage.getItem('username')
     }
     const { data } = await apiClient.post("/Portal/GetUser", userRequest);
+
     
     return data;
 }

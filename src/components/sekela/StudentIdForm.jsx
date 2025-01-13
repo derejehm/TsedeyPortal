@@ -29,8 +29,8 @@ const StudentIdForm = () => {
     e.preventDefault();
 
     const requestBody = {
-      Branch_ID: "0101",
-      User_ID: "mikiyas",
+      Branch_ID:localStorage.getItem('branch'),
+      User_ID: localStorage.getItem('username'),
       Student_ID: studentId,
     };
 
