@@ -3,11 +3,12 @@ import axios from "axios";
 import AccountValidationForm from "./AccountValidationForm";
 import {
   Box,
-  TextField,
   Button,
+  TextField,
   Typography,
-  Alert,
   Grid,
+  Paper,
+  Alert,
   Divider,
 } from "@mui/material";
 
@@ -19,8 +20,8 @@ const StudentIdForm = () => {
   const [totalOutstandingFee, setTotalOutstandingFee] = useState(0);
   const [studentFullName, setStudentFullName] = useState("");
   const [transactionId, setTransactionId] = useState("");
-  const [months, setMonths] = useState([]);
-  const [amounts, setAmounts] = useState([]);
+  const [months, setMonths] = useState([]); // Set as array
+  const [amounts, setAmounts] = useState([]); // Set as array
   const [grade, setGrade] = useState("");
   const [school, setSchool] = useState("");
 
@@ -50,10 +51,10 @@ const StudentIdForm = () => {
       setTotalOutstandingFee(response.data.data.totalOutstandingFee);
       setStudentFullName(response.data.data.student.fullName);
       setTransactionId(response.data.transaction_ID);
-      setMonths(response.data.months.split(",").map((item) => item.trim()));
+      setMonths(response.data.months.split(",").map((item) => item.trim())); // Convert to array
       setAmounts(
         response.data.amounts.split(",").map((item) => parseFloat(item.trim()))
-      );
+      ); // Convert to array of numbers
       setGrade(response.data.data.student.grade);
       setSchool(response.data.data.student.school);
       setIsStudentValidated(true);
@@ -81,104 +82,90 @@ const StudentIdForm = () => {
   };
 
   return (
-    <Box m={3}>
-      {/* <Paper elevation={3} sx={{ padding: 4, maxWidth: 600, width: "100%" }}> */}
+    <Box >
       {!isStudentValidated ? (
-        <Box component="form" onSubmit={handleSubmit}>
-          <Typography variant="h5" gutterBottom>
-            Student Fee Validation
-          </Typography>
-          <Divider sx={{ marginBottom: 2 }} />
-
-          <TextField
-            fullWidth
-            label="Student ID"
-            variant="outlined"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
-            required
-            sx={{ marginBottom: 2 }}
-          />
-
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-              >
-                Submit
-              </Button>
+        <Paper
+          elevation={3}
+          sx={{ p: 4,  mb: 3 }}
+        >
+          <form onSubmit={handleSubmit}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Enter Student ID:
+            </Typography>
+            <TextField
+              fullWidth
+              label="Student ID"
+              variant="outlined"
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+              required
+              sx={{ mb: 3 }}
+            />
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                >
+                  Submit
+                </Button>
+              </Grid>
+              <Grid item xs={6}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  color="error"
+                  fullWidth
+                  onClick={handleClear}
+                >
+                  Clear
+                </Button>
+              </Grid>
             </Grid>
-            <Grid item xs={6}>
-              <Button
-                type="button"
-                variant="outlined"
-                color="secondary"
-                fullWidth
-                onClick={handleClear}
-              >
-                Clear
-              </Button>
-            </Grid>
-          </Grid>
+          </form>
+        </Paper>
+      ) : null}
 
-          {error && (
-            <Alert severity="error" sx={{ marginTop: 2 }}>
-              {error}
-            </Alert>
-          )}
-        </Box>
-      ) : (
-        // <Box>
-        //   <Typography variant="h6">Student Details</Typography>
-        //   <Divider sx={{ marginBottom: 2 }} />
-        //   <Typography>Student Name: {studentFullName}</Typography>
-        //   <Typography>Total Outstanding Fee: {totalOutstandingFee}</Typography>
-        //   <Typography>Grade: {grade}</Typography>
-        //   <Typography>School: {school}</Typography>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
+      {responseData && (
         <Box mt={3} p={2} border="1px solid" borderColor="grey.300" borderRadius={2}>
           <Typography variant="h6" gutterBottom>
-            Student Details
+          Student Information
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <Typography variant="body1">
-            <strong> Student Name:</strong>  {studentFullName.toUpperCase()}
+            <strong> Name : </strong> {studentFullName?.toUpperCase()}
           </Typography>
           <Typography variant="body1">
-            <strong>Total Outstanding Fee:</strong>  {totalOutstandingFee}
+            <strong>Total Outstanding Fee : </strong> {totalOutstandingFee}
           </Typography>
-          <Typography variant="body1">
-            <strong> Grade: </strong> {grade.toUpperCase()}
-          </Typography>
-          <Typography variant="body1">
-            <strong> School:  </strong> {school.toUpperCase()}
-          </Typography>
-
-
-
-          {totalOutstandingFee > 0 ? (
-            <AccountValidationForm
-              studentId={studentId}
-              totalOutstandingFee={totalOutstandingFee}
-              studentFullName={studentFullName}
-              transactionId={transactionId}
-              months={months}
-              amounts={amounts}
-              grade={grade}
-              school={school}
-              onClear={handleClear}
-            />
-          ) : (
-            <Alert severity="success" sx={{ marginTop: 2 }}>
-              Bill is already paid.
-            </Alert>
-          )}
+      
         </Box>
       )}
-      {/* </Paper> */}
+
+      {isStudentValidated && totalOutstandingFee > 0 ? (
+        <AccountValidationForm
+          studentId={studentId}
+          totalOutstandingFee={totalOutstandingFee}
+          studentFullName={studentFullName}
+          transactionId={transactionId}
+          months={months}
+          amounts={amounts}
+          grade={grade}
+          school={school}
+          onClear={handleClear}
+        />
+      ) : isStudentValidated && totalOutstandingFee === 0 ? (
+
+        <Alert sx={{ mt: 3 }}> Bill is already paid.</Alert>
+      ) : null}
     </Box>
   );
 };

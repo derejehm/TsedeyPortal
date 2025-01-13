@@ -27,7 +27,7 @@ export async function login(user) {
 
 export async function getUserDetails() {
 
-    console.log(localStorage.getItem('username'));
+   
    const userRequest= {
         "OperatorID" : localStorage.getItem('username')
     }

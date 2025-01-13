@@ -25,7 +25,7 @@ function RootLayout() {
     }
 
     const sessionDuration = getSessionDuration();
-    console.log(sessionDuration);
+    
 
     setTimeout(() => {
       submit(null, { action: '/logout', method: 'post' })

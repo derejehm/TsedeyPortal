@@ -47,7 +47,6 @@ const Sidebar = (user) => {
   useEffect(() => {
     getUserDetails().then((data) => {
       if (data.status === '200') {
-        console.log(data);
         setUserData(data);
       }
     })

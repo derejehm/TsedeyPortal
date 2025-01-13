@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import axios from "axios";
 import {
   Box,
-  TextField,
   Button,
+  TextField,
   Typography,
   Paper,
   Alert,
-  Divider,
+  Grid,
 } from "@mui/material";
 
 const PaymentSavingForm = ({ paymentDetails, onClear }) => {
@@ -83,75 +83,73 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
   };
 
   return (
-    <Paper elevation={3} sx={{ padding: 4, borderRadius: 2, maxWidth: 600, margin: "auto" }}>
+    <Paper elevation={3} sx={{ p: 4, mt: 3 }}>
       {!saveResponse ? (
         <form onSubmit={handlePaymentSave}>
-          <Typography variant="h6" gutterBottom>
-            Save Payment Details
-          </Typography>
-          <TextField
-            fullWidth
-            label="Narration"
-            variant="outlined"
-            value={narration}
-            onChange={(e) => setNarration(e.target.value)}
-            required
-            sx={{ marginBottom: 2 }}
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ marginBottom: 2 }}
-          >
-            Save Payment
-          </Button>
-          <Divider sx={{ marginY: 2 }} />
-          <Typography variant="subtitle1" gutterBottom>
-            Request Payload Preview:
-          </Typography>
-          <Box
-            component="pre"
-            sx={{
-              backgroundColor: "#f4f4f4",
-              padding: 2,
-              borderRadius: 1,
-              overflow: "auto",
-              maxHeight: 200,
-            }}
-          >
-            <code>{JSON.stringify(requestPayloadPreview, null, 2)}</code>
+          <Box mb={3}>
+            <TextField
+              fullWidth
+              label="Payment Narration"
+              variant="outlined"
+              value={narration}
+              onChange={(e) => setNarration(e.target.value)}
+              required
+            />
           </Box>
+          <Box>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                >
+                  Save Payment
+                </Button>
+              </Grid>
+              <Grid item xs={6}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  fullWidth
+                  onClick={handleClear}
+                >
+                  Clear
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+         
         </form>
       ) : (
-        <Box textAlign="center">
+        <Box textAlign="left" mt={5}>
           {saveResponse.status === "200" ? (
-            <Alert severity="success" sx={{ marginBottom: 2 }}>
+            <Typography variant="h5" color="success.main" gutterBottom>
               {saveResponse.message}
-            </Alert>
+            </Typography>
           ) : (
-            <Alert severity="error" sx={{ marginBottom: 2 }}>
+            <Typography variant="h5" color="error.main" gutterBottom>
               {saveResponse.message}
-            </Alert>
+            </Typography>
           )}
           <Button
             variant="contained"
-            color="secondary"
+            color="primary"
             onClick={handleClear}
-            fullWidth
+            sx={{ mt: 2 }}
           >
             Clear
           </Button>
         </Box>
       )}
       {saveError && (
-        <Alert severity="error" sx={{ marginTop: 2 }}>
+        <Alert severity="error" sx={{ mt: 2 }}>
           {saveError}
         </Alert>
       )}
-      <Typography variant="body2" color="text.secondary" align="right" sx={{ marginTop: 2 }}>
-        Total Outstanding Fee: {paymentDetails.totalOutstandingFee}
+      <Typography variant="body2" color="text.secondary" mt={1}>
+        Total: {paymentDetails.totalOutstandingFee}
       </Typography>
     </Paper>
   );
