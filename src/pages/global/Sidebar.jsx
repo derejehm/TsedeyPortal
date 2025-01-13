@@ -162,13 +162,14 @@ const Sidebar = (user) => {
               selected={selected}
               setSelected={setSelected}
             /> */}
-            <Item
+            {userData.extraData?.RoleType?.toUpperCase()==="CHECKER" &&  <Item
               title="Supervision"
               to="/paymentsupervision"
               icon={<ReceiptOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
-            />
+            />}
+           
             <Item
               title="Payment Report"
               to="/paymentreport"
