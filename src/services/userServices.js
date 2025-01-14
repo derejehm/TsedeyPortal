@@ -1,6 +1,5 @@
 import { redirect } from "react-router-dom";
 import apiClient from "../utils/api-client";
-import { DataUsageRounded } from "@mui/icons-material";
 
 const tokenName = "session";
 
@@ -13,30 +12,32 @@ export function getSessionDuration() {
 }
 
 export async function login(user) {
-    const { data } = await apiClient.post("Portals/AuthenticateUser", user);
-    
-    if (data.status === "200") {
-        localStorage.setItem(tokenName, data.session);
-        localStorage.setItem('username', user.User_ID);      
-        const expiration = new Date();
-        expiration.setHours(expiration.getHours() + 1);
-        localStorage.setItem('expiration', expiration.toISOString());
-    }
-    return data;
+    const  response = await apiClient.post("Portals/AuthenticateUser", user);
+    // console.log("Test",response);
+    // if (response.status !== '200') {
+    //     const error = new Error("An error occurred while authonticate user.")
+    //     error.code = response.status;
+    //     error.info = await response.info;
+    //     return error;
+    // }
+    // localStorage.setItem(tokenName, response.session);
+    // localStorage.setItem('username', user.User_ID);
+    // const expiration = new Date();
+    // expiration.setHours(expiration.getHours() + 1);
+    // localStorage.setItem('expiration', expiration.toISOString());
+    // console.log("Test",response);
+    return {...response.data ,user};
 }
 
-export async function getUserDetails() {
 
-   
-   const userRequest= {
-        "OperatorID" : localStorage.getItem('username')
+export async function getUserDetails() {
+    const userRequest = {
+        "OperatorID": localStorage.getItem('username')
     }
     const { data } = await apiClient.post("/Portal/GetUser", userRequest);
 
-    
     return data;
 }
-
 
 
 export function logout() {
@@ -57,18 +58,15 @@ export function getUser() {
 
 export function getSession() {
     const session = localStorage.getItem(tokenName);
-
     if (!session) {
         return null;
     }
-
     const sessionDuration = getSessionDuration();
     if (sessionDuration < 0) {
         return 'EXPIRED'
     }
     return session
 }
-
 export function checkAuthLoader() {
     const session = getSession();
 

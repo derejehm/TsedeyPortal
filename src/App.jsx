@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Dashboard from "./pages/dashboard";
 // import Team from "./pages/team";
 import Invoices from "./pages/invoices";
@@ -18,8 +19,8 @@ import PaymentSupervision from "./pages/supervision/Supervision";
 import PaymentReport from "./pages/report/PaymentReport";
 import NotFoundPage from "./pages/errorPage/NotFoundPage ";
 import RootLayout from "./pages/Root.js";
-import {  getSession } from "./services/userServices.js";
-import { logout as  logoutAction } from "./services/userServices.js";
+import { getSession } from "./services/userServices.js";
+import { logout as logoutAction } from "./services/userServices.js";
 
 
 
@@ -32,8 +33,8 @@ const router = createBrowserRouter([
     id: 'root',
     loader: getSession,
     children: [
-      { index: true, element: <Dashboard />  },
-      { path: "login", element: <Login /> },      
+      { index: true, element: <Dashboard /> },
+      { path: "login", element: <Login /> },
       { path: "revenue", element: <RevenueHome /> },
       { path: "contacts", element: <Contacts /> },
       { path: "invoices", element: <Invoices /> },
@@ -44,19 +45,28 @@ const router = createBrowserRouter([
       { path: "faq", element: <FAQ /> },
       { path: "calendar", element: <Calendar /> },
       { path: "geography", element: <Geography /> },
-      { path: "logout", action: logoutAction  },
+      { path: "logout", action: logoutAction },
       { path: "sekela", element: <Sekela /> },
-      { path: "yaya", element: <BillIdForm />  },
+      { path: "yaya", element: <BillIdForm /> },
       { path: "paymentsupervision", element: <PaymentSupervision /> },
-      { path: "paymentreport", element: <PaymentReport />  },
+      { path: "paymentreport", element: <PaymentReport /> },
       // 404 Catch-All Route
       { path: "*", element: <NotFoundPage /> },
     ],
   },
 ]);
 
+const queryClient = new QueryClient()
+
 function App() {
-  return <RouterProvider router={router} />;
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  )
+
+
 }
 
 export default App;

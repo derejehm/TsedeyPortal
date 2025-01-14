@@ -1,21 +1,37 @@
-import { Typography, Box, useTheme, TextField, FormControlLabel, Checkbox, Link, Grid, Container, Button, } from "@mui/material";
+import { Typography, Box, useTheme, TextField, Container, Button, } from "@mui/material";
 import { tokens } from "../../theme";
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import logo from "../../assets/logo.png"
 import Topbar from "../global/Topbar";
 import { login } from "../../services/userServices"
-import { set, useForm } from 'react-hook-form';
+import {  useForm } from 'react-hook-form';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
+import { useMutation } from '@tanstack/react-query'
 
 
 
 const Login = () => {
     const theme = useTheme('light');
     const colors = tokens(theme.palette.mode);
-    const [otherError, setOtherError] = useState("");
 
     const session = localStorage.getItem("session");
+
+    const mutation = useMutation({
+        mutationFn: login,
+        onSuccess: (data) => {
+            localStorage.setItem('session', data.session);
+            localStorage.setItem('username', data.user.User_ID);
+            const expiration = new Date();
+            expiration.setHours(expiration.getHours() + 1);
+            localStorage.setItem('expiration', expiration.toISOString());
+            window.location = "/";
+        },
+        onError: (error) => {
+            console.log("Login Error", error);
+        }
+    })
+
     useEffect(() => {
         if (session) {
             window.location = "/";
@@ -28,31 +44,20 @@ const Login = () => {
         formState: { errors },
     } = useForm();
 
-    const onSubmit = async (data) => {
+    const onSubmit = async (enteredData) => {
         const apiData = {
             Branch_ID: '',
-            User_ID: data.username,
-            Password: data.password,
+            User_ID: enteredData.username,
+            Password: enteredData.password,
         };
 
-        try {
-            var res = await login(apiData)
-            if (res.status === "200") {
-                window.location = "/";
-                setOtherError("");
-            } else {
-                setOtherError("Invalid user name or password!");
-            }
-        } catch (err) {
-            if (err.response && err.response.status === 400) {
-                setOtherError("Invalid user name or password!");
-            }
-        }
+        mutation.mutate(apiData);
+       
 
     };
     return (
 
-        <Container component="main" >
+        <Container component="main" color={  colors.primary} >
             <Topbar />
             <Box
                 sx={{
@@ -66,11 +71,12 @@ const Login = () => {
                 <Typography component="h1" variant="h5">
                     Sign in
                 </Typography>
-                {otherError && (<Stack sx={{ width: '100%' }} spacing={2} m={5}>
-                    <Alert severity="error">{otherError}</Alert>
-                </Stack>)}
 
                 <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
+
+                    {mutation.isError && (<Stack spacing={2} m={5}>
+                        <Alert severity="error">{mutation.error?.message || "Invalid user name or password!"}</Alert>
+                    </Stack>)}
                     <TextField
                         margin="normal"
                         required
@@ -110,32 +116,20 @@ const Login = () => {
                         error={Boolean(errors.username)}
                         helperText={errors.username?.message}
                     />
-                    <FormControlLabel
-                        control={<Checkbox value="remember" color="primary" />}
-                        label="Remember me"
-                    />
+
                     <Button
                         type="submit"
                         fullWidth
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
+                        disabled={mutation.isPending}
 
                         color="secondary"
                     >
-                        Sign In
+                        {mutation.isPending ? 'Authenticating ....' : "Sign In"}
                     </Button>
-                    <Grid container>
-                        <Grid item xs>
-                            <Link href="#" variant="h5" color={colors.greenAccent[300]}>
-                                Forgot password?
-                            </Link>
-                        </Grid>
-                        <Grid item>
-                            <Link href="#" variant="h5" color={colors.greenAccent[300]}>
-                                {"Don't have an account? Sign Up"}
-                            </Link>
-                        </Grid>
-                    </Grid>
+
+
                 </Box>
             </Box>
 

@@ -47,7 +47,7 @@ const Sidebar = (user) => {
   useEffect(() => {
     getUserDetails().then((data) => {
       if (data.status === '200') {
-        localStorage.setItem('branch', data.extraData?.OurBranchID);  
+        localStorage.setItem('branch', data.extraData?.OurBranchID);
         setUserData(data);
       }
     })
@@ -149,13 +149,14 @@ const Sidebar = (user) => {
             >
               Payment
             </Typography>
-            <Item
+            {userData.extraData?.RoleType?.toUpperCase() === "MAKER" && <Item
               title="Payments"
               to="/Revenue"
               icon={<PaymentsOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
+            }
             {/* <Item
               title="Water"
               to="/contacts"
@@ -163,14 +164,14 @@ const Sidebar = (user) => {
               selected={selected}
               setSelected={setSelected}
             /> */}
-            {userData.extraData?.RoleType?.toUpperCase()==="CHECKER" &&  <Item
+            {userData.extraData?.RoleType?.toUpperCase() === "CHECKER" && <Item
               title="Supervision"
               to="/paymentsupervision"
               icon={<ReceiptOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />}
-           
+
             <Item
               title="Report"
               to="/paymentreport"
