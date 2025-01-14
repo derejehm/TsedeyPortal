@@ -33,8 +33,8 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
       Created_On: currentDate,
       Narration: narration,
       Transaction_ID: paymentDetails.transactionId,
-      Months: paymentDetails.months.join(","),
-      Amounts_Per_Month: paymentDetails.amounts.join(","),
+      Months: paymentDetails.months,
+      Amounts_Per_Month: paymentDetails.amounts,
       Grade: paymentDetails.grade,
       School: paymentDetails.school,
     };
@@ -76,8 +76,8 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
     Created_On: new Date().toLocaleString(),
     Narration: narration,
     Transaction_ID: paymentDetails.transactionId,
-    Months: paymentDetails.months.join(","),
-    Amounts: paymentDetails.amounts.join(","),
+    Months: paymentDetails.months,
+    Amounts: paymentDetails.amounts,
     Grade: paymentDetails.grade,
     School: paymentDetails.school,
   };

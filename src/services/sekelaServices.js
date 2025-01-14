@@ -1,9 +1,14 @@
 import apiClient from "../utils/api-client";
 
-export async function GetStudentFees(requestBody) {
-    const { data } = await apiClient.post("/Portals/GetStudentFees", requestBody,{ headers: { "Content-Type": "application/json" }});
+// export async function GetStudentFees(requestBody) {
+//     const { data } = await apiClient.post("/Portals/GetStudentFees", requestBody,{ headers: { "Content-Type": "application/json" }});
 
-    return data;
+//     return data;
+// }
+
+export async function GetStudentFees(requestBody) {
+    const  response = await apiClient.post("/Portals/GetStudentFees", requestBody,{ headers: { "Content-Type": "application/json" }});
+    return {...response.data ,requestBody};
 }
 
 

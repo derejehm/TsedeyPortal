@@ -13,19 +13,6 @@ export function getSessionDuration() {
 
 export async function login(user) {
     const  response = await apiClient.post("Portals/AuthenticateUser", user);
-    // console.log("Test",response);
-    // if (response.status !== '200') {
-    //     const error = new Error("An error occurred while authonticate user.")
-    //     error.code = response.status;
-    //     error.info = await response.info;
-    //     return error;
-    // }
-    // localStorage.setItem(tokenName, response.session);
-    // localStorage.setItem('username', user.User_ID);
-    // const expiration = new Date();
-    // expiration.setHours(expiration.getHours() + 1);
-    // localStorage.setItem('expiration', expiration.toISOString());
-    // console.log("Test",response);
     return {...response.data ,user};
 }
 

@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useRef, useState } from "react";
 import AccountValidationForm from "./AccountValidationForm";
 import {
   Box,
@@ -11,82 +10,57 @@ import {
   Alert,
   Divider,
 } from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
+import { GetStudentFees } from "../../services/sekelaServices";
 
 const StudentIdForm = () => {
-  const [studentId, setStudentId] = useState("");
-  const [responseData, setResponseData] = useState(null);
-  const [error, setError] = useState(null);
-  const [isStudentValidated, setIsStudentValidated] = useState(false);
-  const [totalOutstandingFee, setTotalOutstandingFee] = useState(0);
-  const [studentFullName, setStudentFullName] = useState("");
-  const [transactionId, setTransactionId] = useState("");
-  const [months, setMonths] = useState([]); // Set as array
-  const [amounts, setAmounts] = useState([]); // Set as array
-  const [grade, setGrade] = useState("");
-  const [school, setSchool] = useState("");
+  const studentId = useRef();
+  const [fillData, setFillData] = useState();
+
+
+  const { mutate, data, error, isError, isPending, reset } = useMutation({
+    mutationFn: GetStudentFees,
+    onSuccess: (data) => {
+      setFillData({
+        totalOutstandingFee: data.data?.totalOutstandingFee,
+        grade: data.data.student?.grade,
+        school: data.data.student?.school,
+        studentFullName: data.data?.student?.fullName,
+        transactionId: data.data?.transaction_ID,
+        amounts: data?.amounts,
+        months: data?.months
+
+      });
+
+    },
+    onError: (error) => {
+      console.log("Student Error", error);
+    }
+  })
+
+  const handleClear = () => {
+    reset();
+    setFillData({});
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const requestBody = {
-      Branch_ID:localStorage.getItem('branch'),
+      Branch_ID: localStorage.getItem('branch'),
       User_ID: localStorage.getItem('username'),
-      Student_ID: studentId,
+      Student_ID: studentId.current.value,
     };
 
-    try {
-      const response = await axios.post(
-        "http://10.10.105.21:7271/api/Portals/GetStudentFees",
-        requestBody,
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      if (response.data.status !== true) {
-        setError(response.data.message || "An unknown error occurred.");
-        setResponseData(null);
-        return;
-      }
-
-      setResponseData(response.data);
-      setTotalOutstandingFee(response.data.data.totalOutstandingFee);
-      setStudentFullName(response.data.data.student.fullName);
-      setTransactionId(response.data.transaction_ID);
-      setMonths(response.data.months.split(",").map((item) => item.trim())); // Convert to array
-      setAmounts(
-        response.data.amounts.split(",").map((item) => parseFloat(item.trim()))
-      ); // Convert to array of numbers
-      setGrade(response.data.data.student.grade);
-      setSchool(response.data.data.student.school);
-      setIsStudentValidated(true);
-      setError(null);
-    } catch (err) {
-      console.error("Error Details: ", err);
-      setError("An error occurred while retrieving student fees.");
-      setResponseData(null);
-      setIsStudentValidated(false);
-    }
-  };
-
-  const handleClear = () => {
-    setStudentId("");
-    setResponseData(null);
-    setError(null);
-    setIsStudentValidated(false);
-    setTotalOutstandingFee(0);
-    setStudentFullName("");
-    setTransactionId("");
-    setMonths([]);
-    setAmounts([]);
-    setGrade("");
-    setSchool("");
-  };
+    mutate(requestBody);
+  }
 
   return (
     <Box >
-      {!isStudentValidated ? (
+      {!data ? (
         <Paper
           elevation={3}
-          sx={{ p: 4,  mb: 3 }}
+          sx={{ p: 4, mb: 3 }}
         >
           <form onSubmit={handleSubmit}>
             <Typography variant="h6" sx={{ mb: 2 }}>
@@ -96,8 +70,7 @@ const StudentIdForm = () => {
               fullWidth
               label="Student ID"
               variant="outlined"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value)}
+              inputRef={studentId}
               required
               sx={{ mb: 3 }}
             />
@@ -108,8 +81,9 @@ const StudentIdForm = () => {
                   variant="contained"
                   color="primary"
                   fullWidth
+                  disabled={isPending}
                 >
-                  Submit
+                  {isPending ? "Validating..." : "Submit"}
                 </Button>
               </Grid>
               <Grid item xs={6}>
@@ -128,41 +102,53 @@ const StudentIdForm = () => {
         </Paper>
       ) : null}
 
-      {error && (
+      {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
+          {error.status === 404 ? "Student id is not found!" : error.message}
         </Alert>
       )}
 
-      {responseData && (
+      {data && (
         <Box mt={3} p={2} border="1px solid" borderColor="grey.300" borderRadius={2}>
           <Typography variant="h6" gutterBottom>
-          Student Information
+            Student Information
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <Typography variant="body1">
-            <strong> Name : </strong> {studentFullName?.toUpperCase()}
+            <strong> Name : </strong> {fillData.studentFullName?.toUpperCase()}
           </Typography>
           <Typography variant="body1">
-            <strong>Total Outstanding Fee : </strong> {totalOutstandingFee}
+            <strong> Grade : </strong> {fillData.grade?.toUpperCase()}
           </Typography>
-      
+          <Typography variant="body1">
+            <strong> Shool : </strong> {fillData.school?.toUpperCase()}
+          </Typography>
+          <Typography variant="body1">
+            <strong> Months : </strong> {fillData.months?.toUpperCase()}
+          </Typography>
+          <Typography variant="body1">
+            <strong> Amounts : </strong> {fillData.amounts?.toUpperCase()}
+          </Typography>
+          <Typography variant="body1">
+            <strong>Total Outstanding Fee : </strong> {fillData.totalOutstandingFee}
+          </Typography>
+
         </Box>
       )}
 
-      {isStudentValidated && totalOutstandingFee > 0 ? (
+      {data && fillData.totalOutstandingFee > 0 ? (
         <AccountValidationForm
           studentId={studentId}
-          totalOutstandingFee={totalOutstandingFee}
-          studentFullName={studentFullName}
-          transactionId={transactionId}
-          months={months}
-          amounts={amounts}
-          grade={grade}
-          school={school}
+          totalOutstandingFee={fillData.totalOutstandingFee}
+          studentFullName={fillData.studentFullName}
+          transactionId={fillData.transactionId}
+          months={fillData.months}
+          amounts={fillData.amounts}
+          grade={fillData.grade}
+          school={fillData.school}
           onClear={handleClear}
         />
-      ) : isStudentValidated && totalOutstandingFee === 0 ? (
+      ) : data && fillData.totalOutstandingFee === 0 ? (
 
         <Alert sx={{ mt: 3 }}> Bill is already paid.</Alert>
       ) : null}
