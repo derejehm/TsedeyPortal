@@ -21,12 +21,15 @@ const StudentIdForm = () => {
   const { mutate, data, error, isError, isPending, reset } = useMutation({
     mutationFn: GetStudentFees,
     onSuccess: (data) => {
+
+      console.log(data);
       setFillData({
+        student_id: studentId.current.value,
         totalOutstandingFee: data.data?.totalOutstandingFee,
         grade: data.data.student?.grade,
         school: data.data.student?.school,
         studentFullName: data.data?.student?.fullName,
-        transactionId: data.data?.transaction_ID,
+        transactionId: data?.transaction_ID,
         amounts: data?.amounts,
         months: data?.months
 
@@ -118,6 +121,9 @@ const StudentIdForm = () => {
             <strong> Name : </strong> {fillData.studentFullName?.toUpperCase()}
           </Typography>
           <Typography variant="body1">
+            <strong> Student Id : </strong> {fillData.student_id?.toUpperCase()}
+          </Typography>
+          <Typography variant="body1">
             <strong> Grade : </strong> {fillData.grade?.toUpperCase()}
           </Typography>
           <Typography variant="body1">
@@ -138,7 +144,7 @@ const StudentIdForm = () => {
 
       {data && fillData.totalOutstandingFee > 0 ? (
         <AccountValidationForm
-          studentId={studentId}
+          studentId={fillData.student_id}
           totalOutstandingFee={fillData.totalOutstandingFee}
           studentFullName={fillData.studentFullName}
           transactionId={fillData.transactionId}

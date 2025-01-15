@@ -4,7 +4,7 @@ import React, { useEffect } from "react"
 import logo from "../../assets/logo.png"
 import Topbar from "../global/Topbar";
 import { login } from "../../services/userServices"
-import {  useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import { useMutation } from '@tanstack/react-query'
@@ -52,12 +52,12 @@ const Login = () => {
         };
 
         mutation.mutate(apiData);
-       
+
 
     };
     return (
 
-        <Container component="main" color={  colors.primary} >
+        <Container component="main" color={colors.primary} >
             <Topbar />
             <Box
                 sx={{
@@ -75,7 +75,7 @@ const Login = () => {
                 <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
 
                     {mutation.isError && (<Stack spacing={2} m={5}>
-                        <Alert severity="error">{mutation.error?.message || "Invalid user name or password!"}</Alert>
+                        <Alert severity="error">{mutation.error.status === 401 ? "Invalid user name or password!" : mutation.error?.message}</Alert>
                     </Stack>)}
                     <TextField
                         margin="normal"

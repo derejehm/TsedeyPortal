@@ -21,6 +21,7 @@ import NotFoundPage from "./pages/errorPage/NotFoundPage ";
 import RootLayout from "./pages/Root.js";
 import { getSession } from "./services/userServices.js";
 import { logout as logoutAction } from "./services/userServices.js";
+import SchoolHome from "./components/school/ShoolHome.jsx";
 
 
 
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: "login", element: <Login /> },
       { path: "revenue", element: <RevenueHome /> },
+      { path: "school", element: <SchoolHome /> },
       { path: "contacts", element: <Contacts /> },
       { path: "invoices", element: <Invoices /> },
       { path: "form", element: <Form /> },

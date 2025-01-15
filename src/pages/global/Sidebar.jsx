@@ -149,13 +149,23 @@ const Sidebar = (user) => {
             >
               Payment
             </Typography>
-            {userData.extraData?.RoleType?.toUpperCase() === "MAKER" && <Item
-              title="Payments"
+            {userData.extraData?.RoleType?.toUpperCase() === "MAKER" && 
+            <>
+            <Item
+              title="Revenue"
               to="/Revenue"
               icon={<PaymentsOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
+            <Item
+              title="School"
+              to="/school"
+              icon={<PaymentsOutlinedIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            </>
             }
             {/* <Item
               title="Water"

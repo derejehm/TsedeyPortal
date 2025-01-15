@@ -2,7 +2,6 @@ import React from "react";
 import { Card, CardContent, Typography, Grid,useTheme,Box } from "@mui/material";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
-import  sekelaLogo from "../../assets/images/sekela.png";
 import yayaLogo from "../../assets/images/yaya.png"
 import {  useNavigate } from "react-router-dom";
 
@@ -17,28 +16,20 @@ export default function RevenueHome() {
 
    // Array of menu items with title and image URL
   const menuItems = [
-    { 
-      title: "SEKELA", 
-      image:sekelaLogo,
-      onClick: () =>  navigate( "/sekela")
-    },
+  
     { 
       title: "YAYA", 
       image: yayaLogo, 
         onClick: () =>  navigate( "/yaya")
     },
-    { 
-      title: "EthioDash", 
-      image: "https://via.placeholder.com/100?text=ETHIODASH", 
-      onClick: () => alert("EthioDash clicked") 
-    },
+  
   
   ];
 
   return (
     <Box m="20px">
              <Box display="flex" justifyContent="space-between" alignItems="center">
-             <Header title="PAYMENTS" subtitle="Welcome to tsedey payment" />
+             <Header title="PAYMENTS" subtitle="Welcome to Revenue payment" />
              </Box>
     <Grid container spacing={2}  >
       {menuItems.map((item, index) => (

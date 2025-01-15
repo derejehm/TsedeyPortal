@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useRef, useState } from "react";
+import config from '../../config.json'
+import { useMutation } from "@tanstack/react-query";
+import {  SekelaSavePayment } from "../../services/sekelaServices";
 import {
   Box,
   Button,
@@ -11,9 +13,21 @@ import {
 } from "@mui/material";
 
 const PaymentSavingForm = ({ paymentDetails, onClear }) => {
-  const [narration, setNarration] = useState("");
+  const narration = useRef();
   const [saveResponse, setSaveResponse] = useState(null);
-  const [saveError, setSaveError] = useState(null);
+
+
+    const { mutate,  error, isError, isPending } = useMutation({
+      mutationFn: SekelaSavePayment,
+      onSuccess: (data) => {
+        console.log(data);
+        setSaveResponse(data);
+  
+      },
+      onError: (error) => {
+        console.log("Student Error", error);
+      }
+    });
 
   const handlePaymentSave = async (e) => {
     e.preventDefault();
@@ -26,12 +40,12 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
       Customer_Account: paymentDetails.accountNumber,
       Customer_Name: paymentDetails.customerName,
       Student_Name: paymentDetails.studentFullName,
-      To_Account: "2305130003340",
+      To_Account: config.SekelaAccount,
       Customer_Phone: paymentDetails.phoneNumber,
       Branch_ID:  localStorage.getItem('branch'),
       Created_By: localStorage.getItem("username"),
       Created_On: currentDate,
-      Narration: narration,
+      Narration: narration.current.value,
       Transaction_ID: paymentDetails.transactionId,
       Months: paymentDetails.months,
       Amounts_Per_Month: paymentDetails.amounts,
@@ -39,48 +53,51 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
       School: paymentDetails.school,
     };
 
-    console.log("Request Payload:", requestPayload);
+     console.log(requestPayload);
+      mutate(requestPayload);
 
-    try {
-      const response = await axios.post(
-        "http://10.10.105.21:7271/api/Portals/SekelaSavePayment",
-        requestPayload,
-        { headers: { "Content-Type": "application/json" } }
-      );
-      setSaveResponse(response.data);
-      setSaveError(null);
-    } catch (err) {
-      console.error("Save Payment Error Details: ", err);
-      setSaveError("An error occurred while saving the payment details.");
-      setSaveResponse(null);
-    }
+    // console.log("Request Payload:", requestPayload);
+
+    // try {
+    //   const response = await axios.post(
+    //     "http://10.10.105.21:7271/api/Portals/SekelaSavePayment",
+    //     requestPayload,
+    //     { headers: { "Content-Type": "application/json" } }
+    //   );
+    //   setSaveResponse(response.data);
+    //   setSaveError(null);
+    // } catch (err) {
+    //   console.error("Save Payment Error Details: ", err);
+    //   setSaveError("An error occurred while saving the payment details.");
+    //   setSaveResponse(null);
+    // }
   };
 
   const handleClear = () => {
-    setNarration("");
+    //setNarration("");
     setSaveResponse(null);
-    setSaveError(null);
+   // setSaveError(null);
     onClear();
   };
 
-  const requestPayloadPreview = {
-    Student_ID: paymentDetails.studentId,
-    Total_Amount: paymentDetails.totalOutstandingFee.toString(),
-    Customer_Account: paymentDetails.accountNumber,
-    Customer_Name: paymentDetails.customerName,
-    Student_Name: paymentDetails.studentFullName,
-    To_Account: "2305130003340",
-    Customer_Phone: paymentDetails.phoneNumber,
-    Branch_ID: localStorage.getItem('branch'),
-    Created_By:localStorage.getItem("username"),
-    Created_On: new Date().toLocaleString(),
-    Narration: narration,
-    Transaction_ID: paymentDetails.transactionId,
-    Months: paymentDetails.months,
-    Amounts: paymentDetails.amounts,
-    Grade: paymentDetails.grade,
-    School: paymentDetails.school,
-  };
+  // const requestPayloadPreview = {
+  //   Student_ID: paymentDetails.studentId,
+  //   Total_Amount: paymentDetails.totalOutstandingFee.toString(),
+  //   Customer_Account: paymentDetails.accountNumber,
+  //   Customer_Name: paymentDetails.customerName,
+  //   Student_Name: paymentDetails.studentFullName,
+  //   To_Account: "2305130003340",
+  //   Customer_Phone: paymentDetails.phoneNumber,
+  //   Branch_ID: localStorage.getItem('branch'),
+  //   Created_By:localStorage.getItem("username"),
+  //   Created_On: new Date().toLocaleString(),
+  //   Narration: narration,
+  //   Transaction_ID: paymentDetails.transactionId,
+  //   Months: paymentDetails.months,
+  //   Amounts: paymentDetails.amounts,
+  //   Grade: paymentDetails.grade,
+  //   School: paymentDetails.school,
+  // };
 
   return (
     <Paper elevation={3} sx={{ p: 4, mt: 3 }}>
@@ -91,8 +108,9 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
               fullWidth
               label="Payment Narration"
               variant="outlined"
-              value={narration}
-              onChange={(e) => setNarration(e.target.value)}
+              inputRef={narration}
+             // value={narration}
+             // onChange={(e) => setNarration(e.target.value)}
               required
             />
           </Box>
@@ -104,8 +122,10 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
                   variant="contained"
                   color="primary"
                   fullWidth
+                  disabled={isPending}
                 >
-                  Save Payment
+                  {isPending ?"Saving ..." :"Save Payment" }
+                  
                 </Button>
               </Grid>
               <Grid item xs={6}>
@@ -143,9 +163,9 @@ const PaymentSavingForm = ({ paymentDetails, onClear }) => {
           </Button>
         </Box>
       )}
-      {saveError && (
+      {isError && (
         <Alert severity="error" sx={{ mt: 2 }}>
-          {saveError}
+          {error.message}
         </Alert>
       )}
       <Typography variant="body2" color="text.secondary" mt={1}>
