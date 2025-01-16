@@ -18,7 +18,16 @@ import {
   CircularProgress,
   Pagination,
   Alert,
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
+
+import Modal from "../../components/modal";
+
+
 
 const PAYMENT_TYPES = [
   { id: "Yaya", label: "Yaya Pending Payments" },
@@ -36,16 +45,37 @@ const PaymentSupervision = () => {
   const [paymentType, setPaymentType] = useState(PAYMENT_TYPES[0].id);
   const rowsPerPage = 4;
 
+
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+
+  const handleReview = (payment) => {
+    console.log(payment);
+    setSelectedPayment(payment); // Set the payment details for review
+    setModalIsOpen(true); // Open the modal
+  };
+
+  const handleCloseModal = () => {
+    setModalIsOpen(false);
+    setSelectedPayment(null);
+  };
+
+  const handleReviewClose = () => {
+    setModalIsOpen(false);
+  }
+
   const fetchPendingPayments = async () => {
     const branchID = localStorage.getItem('branch');
     const userID = localStorage.getItem("username");
     const requestBody = { BranchID: branchID, User_ID: userID };
 
+
+
     let endpoint;
     if (paymentType === "Yaya") {
-      endpoint = "http://10.10.105.21:7271/api/Portals/AccessPandingPayment";
+      endpoint = "http://10.10.105.21:7271/api/Portals/AccessConsolidatedPendingPayment";
     } else if (paymentType === "Sekela") {
-      endpoint = "http://10.10.105.21:7271/api/Portals/AccessSekelaPendingPayment";
+      endpoint = "http://10.10.105.21:7271/api/Portals/AccessConsolidatedPendingPayment";
     } else {
       return;
     }
@@ -57,6 +87,7 @@ const PaymentSupervision = () => {
       const response = await axios.post(endpoint, requestBody, {
         headers: { "Content-Type": "application/json" },
       });
+      console.log(response.data);
       setPendingPayments(response.data);
       setFilteredPayments(response.data);
     } catch (err) {
@@ -261,12 +292,51 @@ const PaymentSupervision = () => {
     setCurrentPage(value);
   };
 
+
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const currentRows = filteredPayments.slice(startIndex, endIndex);
 
   return (
     <Box p={3}>
+      {/* Modal for Review */}
+      <Dialog open={modalIsOpen} onClose={handleCloseModal} maxWidth="sm" fullWidth>
+        <DialogTitle>Review Payment Details</DialogTitle>
+        <DialogContent>
+          {selectedPayment ? (
+            <Box mt={3} p={2} border="1px solid" borderColor="grey.300" borderRadius={2}>
+              <Typography variant="h6" gutterBottom>
+                Review Payment Details
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Typography variant="body1">
+                <strong> Amount : </strong> {selectedPayment.total_Amount || selectedPayment.amount}
+              </Typography>
+              <Typography variant="body1">
+                <strong> Client/Customer Name :  </strong> {selectedPayment.client_Name || selectedPayment.student_Name}
+              </Typography>
+              <Typography variant="body1">
+                <strong> Student Name : </strong>  {selectedPayment.student_Name || selectedPayment.customer_Name}
+              </Typography>
+              <Typography variant="body1">
+                <strong> Customer Account: </strong> {selectedPayment.customer_Account}
+              </Typography>
+
+            </Box>
+
+          ) : (
+            <Typography>No payment details available.</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseModal} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
+
       <Typography variant="h4" gutterBottom>
         Pending Payments
       </Typography>
@@ -313,19 +383,36 @@ const PaymentSupervision = () => {
                     <TableCell>{paymentType === "Yaya" ? "Amount" : "Total Amount"}</TableCell>
                     <TableCell>Client/Customer Name</TableCell>
                     <TableCell>{paymentType === "Yaya" ? "Customer Name" : "Student Name"}</TableCell>
-                    <TableCell>Customer Account</TableCell>
+                    <TableCell>Customer Account</TableCell>             
+                    <TableCell>Created By</TableCell>    
+                    <TableCell>Created On</TableCell>                  
                     <TableCell align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {currentRows.map((payment) => (
                     <TableRow key={payment.rowID}>
+                      <TableCell>{payment.source?.toUpperCase() }</TableCell>
                       <TableCell>{payment.total_Amount || payment.amount}</TableCell>
                       <TableCell>{payment.client_Name || payment.student_Name}</TableCell>
-                      <TableCell>{payment.student_Name || payment.customer_Name}</TableCell>
-                      <TableCell>{payment.customer_Account}</TableCell>
+                      <TableCell>{payment.student_Name || payment.customerName}</TableCell>
+                      <TableCell>{payment.customerAccount}</TableCell>
+                      <TableCell>{payment.createdBy?.toUpperCase()}</TableCell>
+                      <TableCell>{payment.createdOn?.toUpperCase()}</TableCell>
+
+
+                      
                       <TableCell align="center">
                         <Box display="flex" justifyContent="center" gap={1}>
+                          <Button
+                            variant="contained"
+                            color="success"
+                            onClick={() => handleReview(payment)}
+                            disabled={isLoading}
+                          >
+                            Review
+                          </Button>
+
                           <Button
                             variant="contained"
                             color="success"
