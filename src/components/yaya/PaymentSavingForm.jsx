@@ -1,126 +1,132 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { SavePaymentDetail } from "../../services/yayaServices";
 import {
   Box,
-  TextField,
   Button,
+  TextField,
   Typography,
-  Alert,
   Paper,
+  Alert,
+  Grid,
 } from "@mui/material";
-import { SavePaymentDetail } from "../../services/yayaServices";
 
 const PaymentSavingForm = ({ accountDetails, totalDue, onClear }) => {
-  const [narration, setNarration] = useState("");
+  const narration = useRef();
   const [saveResponse, setSaveResponse] = useState(null);
-  const [saveError, setSaveError] = useState(null);
-  const [requestBody, setRequestBody] = useState({}); // Store request body for preview
 
-  const handlePaymentSave = async (e) => {
+  const { mutate, isLoading, isError, error } = useMutation({
+    mutationFn: SavePaymentDetail,
+    onSuccess: (data) => {
+      console.log("Payment Saved Successfully:", data);
+      setSaveResponse(data);
+    },
+    onError: (err) => {
+      console.error("Error Saving Payment:", err);
+      setSaveResponse(null);
+    },
+  });
+
+  const handlePaymentSave = (e) => {
     e.preventDefault();
+
+    // Validate accountDetails and totalDue
+    if (!accountDetails || totalDue === undefined) {
+      alert("Account details or total due amount is missing.");
+      return;
+    }
 
     const currentDate = new Date().toLocaleString();
 
-    // Prepare the request payload
     const requestPayload = {
       Amount: totalDue,
-      Client_yaya_account: "amhararbor11",
-      Client_Name: accountDetails.clientName,
+      Client_yaya_account: accountDetails.accountId,
+      Client_Name: accountDetails.customerName,
       Customer_Account: accountDetails.accountNumber,
       Customer_Name: accountDetails.customerName,
       Customer_Phone_Number: accountDetails.phoneNumber,
-      Transfer_To: "1201160002517", // Static value
-      Branch_ID: localStorage.getItem('branch'), // Static value
+      Transfer_To: "1201160002517",
+      Branch_ID: localStorage.getItem("branch"),
       CreatedOn: currentDate,
-      CreatedBy: localStorage.getItem("username"), // Static value or dynamically set
+      CreatedBy: localStorage.getItem("username"),
       Bill_ID: accountDetails.billId,
-      Narration: narration,
+      Narration: narration.current.value,
     };
 
-    console.log("Request Payload Before Saving:", requestPayload); // Log the request payload
-    setRequestBody(requestPayload); // Save to state for displaying
-
-    try {
-      const response = await SavePaymentDetail(requestPayload);
-      setSaveResponse(response.data);
-      setSaveError(null);
-    } catch (err) {
-      console.error("Save Payment Error Details: ", err);
-      setSaveError("An error occurred while saving the payment details.");
-      setSaveResponse(null);
-    }
+    console.log("Request Payload:", requestPayload);
+    mutate(requestPayload);
   };
 
   const handleClear = () => {
-    setNarration("");
+    narration.current.value = "";
     setSaveResponse(null);
-    setSaveError(null);
-    onClear(); // Call clear function from parent
+    onClear();
   };
 
   return (
-    <Paper elevation={3} sx={{ padding: 3, marginTop: 2 }}>
+    <Paper elevation={3} sx={{ p: 4, mt: 3 }}>
       {!saveResponse ? (
-        <Box
-          component="form"
-          onSubmit={handlePaymentSave}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-          }}
-        >
-          <Typography variant="h6" color="text.primary">
-            Enter Payment Narration
-          </Typography>
-
-          <TextField
-            label="Narration"
-            variant="outlined"
-            fullWidth
-            value={narration}
-            onChange={(e) => setNarration(e.target.value)}
-            required
-          />
-
-          <Box display="flex" justifyContent="space-between">
-            <Button type="submit" variant="contained" color="primary">
-              Save Payment
-            </Button>
-            <Button
-              type="button"
+        <form onSubmit={handlePaymentSave}>
+          <Box mb={3}>
+            <TextField
+              fullWidth
+              label="Payment Narration"
               variant="outlined"
-              color="error"
-              onClick={handleClear}
-            >
-              Clear
-            </Button>
+              inputRef={narration}
+              required
+            />
           </Box>
-        </Box>
+          <Box>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Saving..." : "Save Payment"}
+                </Button>
+              </Grid>
+              <Grid item xs={6}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  fullWidth
+                  onClick={handleClear}
+                >
+                  Clear
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </form>
       ) : (
-        <Box textAlign="center" mt={2}>
+        <Box textAlign="left" mt={5}>
           {saveResponse.status === "200" ? (
-            <Alert severity="success" sx={{ mb: 2 }}>
+            <Typography variant="h5" color="success.main" gutterBottom>
               {saveResponse.message}
-            </Alert>
+            </Typography>
           ) : (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Typography variant="h5" color="error.main" gutterBottom>
               {saveResponse.message}
-            </Alert>
+            </Typography>
           )}
-
           <Button
             variant="contained"
-            color="secondary"
+            color="primary"
             onClick={handleClear}
+            sx={{ mt: 2 }}
           >
             Clear
           </Button>
         </Box>
       )}
-
-      {saveError && (
+      {isError && (
         <Alert severity="error" sx={{ mt: 2 }}>
-          {saveError}
+          {error?.response?.data?.message ||
+            "An error occurred while saving the payment details."}
         </Alert>
       )}
     </Paper>

@@ -1,7 +1,8 @@
 import apiClient from "../utils/api-client";
+// import apiClient from "./apiClient";
 
+// Function to retrieve pending bill details
 export async function GetPendingBill({ billId, accountId }) {
-
     const requestBody = {
         CustomerID: "1648094426",
         Country: "ETHIOPIATEST",
@@ -57,20 +58,15 @@ export async function GetPendingBill({ billId, accountId }) {
     };
 
 
-    try {
-        const response = await apiClient.post("/YAYA/GetPendingBill", requestBody, { headers: { "Content-Type": "application/json" } }
-        );
-        return response
-    } catch (err) {
-        console.error("Save Payment Error Details: ", err);
-    }
+    const response = await apiClient.post("/YAYA/GetPendingBill", requestBody, {
+        headers: { "Content-Type": "application/json" },
+    });
+    return { ...response.data, requestBody };
 
-    return "An error occurred while saving the payment details."
 }
 
-
+// Function to retrieve customer details
 export async function GetCustomerDetail({ billId, accountNumber }) {
-
     const requestBody = {
         CustomerID: "1648094426",
         Country: "ETHIOPIATEST",
@@ -82,13 +78,13 @@ export async function GetCustomerDetail({ billId, accountNumber }) {
         PaymentDetails: {
             MerchantID: "YAYAPAYMENT",
             FunctionName: "GETNAME",
-            AccountID: "amhararbor11",
+            AccountID: accountNumber,
             Amount: "0",
             ReferenceNumber: "aba47c60-e606-11ee-b720-f51215b66fffyuyuxx",
         },
         InfoFields: {
             InfoField1: billId,
-            InfoField7: accountNumber, // Pass account number here
+            InfoField7: accountNumber,
         },
         MerchantConfig: {
             DLLCallID: "YAYAPAYMENT",
@@ -125,27 +121,23 @@ export async function GetCustomerDetail({ billId, accountNumber }) {
     };
 
 
+    const response = await apiClient.post("/YAYA/GetCustomerDetail", requestBody, {
+        headers: { "Content-Type": "application/json" },
+    });
+    return { ...response.data, requestBody };
 
-    try {
-        const response = await apiClient.post("YAYA/GetCustomerDetail", requestBody, { headers: { "Content-Type": "application/json" } }
-        );
-        return response
-    } catch (err) {
-        console.error("Save Payment Error Details: ", err);
-    }
 
-    return "An error occurred while saving the payment details."
 }
 
 
-export async function SavePaymentDetail(requestBody) {
-    try {
-        const response = await apiClient.post("Portals/SavePaymentDetail", requestBody, { headers: { "Content-Type": "application/json" } }
-        );
-        return response
-    } catch (err) {
-        console.error("Save Payment Error Details: ", err);
-    }
 
-    return "An error occurred while saving the payment details."
+// Function to save payment details
+export async function SavePaymentDetail(requestPayload) {
+
+    const response = await apiClient.post("/Portals/SavePaymentDetail", requestPayload, {
+        headers: { "Content-Type": "application/json" },
+    });
+
+    return { ...response.data, requestPayload };
+
 }
