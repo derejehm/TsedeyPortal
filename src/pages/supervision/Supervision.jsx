@@ -25,14 +25,34 @@ import {
   DialogActions,
 } from "@mui/material";
 
-import Modal from "../../components/modal";
-
-
 
 const PAYMENT_TYPES = [
-  { id: "Yaya", label: "Yaya Pending Payments" },
+  { id: "All", label: "All Pending Payments" },
+  { id: "YaYa", label: "YaYa Pending Payments" },
   { id: "Sekela", label: "Sekela Pending Payments" },
 ];
+
+const usePendingPaymentModal = () => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [payment, setPayment] = useState(null);
+
+  const openModal = (selectedPayment) => {
+    setPayment(selectedPayment);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setPayment(null);
+  };
+
+  return {
+    modalOpen,
+    payment,
+    openModal,
+    closeModal,
+  };
+};
 
 const PaymentSupervision = () => {
   const [pendingPayments, setPendingPayments] = useState([]);
@@ -42,52 +62,31 @@ const PaymentSupervision = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [paymentType, setPaymentType] = useState(PAYMENT_TYPES[0].id);
+  const [paymentType, setPaymentType] = useState("All");
   const rowsPerPage = 4;
 
-
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState(null);
+  const { modalOpen, payment, openModal, closeModal } =
+    usePendingPaymentModal();
 
   const handleReview = (payment) => {
-    console.log(payment);
-    setSelectedPayment(payment); // Set the payment details for review
-    setModalIsOpen(true); // Open the modal
+    console.log("Opening modal for payment:", payment);
+    openModal(payment);
   };
-
-  const handleCloseModal = () => {
-    setModalIsOpen(false);
-    setSelectedPayment(null);
-  };
-
-  const handleReviewClose = () => {
-    setModalIsOpen(false);
-  }
-
   const fetchPendingPayments = async () => {
-    const branchID = localStorage.getItem('branch');
+    const branchID = localStorage.getItem("branch");
     const userID = localStorage.getItem("username");
     const requestBody = { BranchID: branchID, User_ID: userID };
-
-
-
-    let endpoint;
-    if (paymentType === "Yaya") {
-      endpoint = "http://10.10.105.21:7271/api/Portals/AccessConsolidatedPendingPayment";
-    } else if (paymentType === "Sekela") {
-      endpoint = "http://10.10.105.21:7271/api/Portals/AccessConsolidatedPendingPayment";
-    } else {
-      return;
-    }
+    const endpoint =
+      "http://10.10.105.21:7271/api/Portals/AccessConsolidatedPendingPayment";
 
     setIsLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       const response = await axios.post(endpoint, requestBody, {
         headers: { "Content-Type": "application/json" },
       });
-      console.log(response.data);
       setPendingPayments(response.data);
       setFilteredPayments(response.data);
     } catch (err) {
@@ -99,34 +98,48 @@ const PaymentSupervision = () => {
 
   useEffect(() => {
     fetchPendingPayments();
-  }, [paymentType]);
+  }, []);
 
   useEffect(() => {
+    const lowerSearchTerm = searchTerm.toLowerCase();
     const results = pendingPayments.filter((payment) => {
-      return (
-        (payment.total_Amount &&
-          payment.total_Amount.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
+      const isPaymentTypeMatch =
+        paymentType === "All" ||
+        (paymentType === "YaYa" && payment.source === "YaYa") ||
+        (paymentType === "Sekela" && payment.source === "Sekela");
+
+      const isSearchMatch =
+        (payment.amount &&
+          payment.amount.toString().toLowerCase().includes(lowerSearchTerm)) ||
+        (payment.customerName &&
+          payment.customerName.toLowerCase().includes(lowerSearchTerm)) ||
+        (payment.customerAccount &&
+          payment.customerAccount.toLowerCase().includes(lowerSearchTerm)) ||
         (payment.client_Name &&
-          payment.client_Name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          payment.client_Name.toLowerCase().includes(lowerSearchTerm)) ||
         (payment.student_Name &&
-          payment.student_Name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (payment.customer_Account &&
-          payment.customer_Account.toString().toLowerCase().includes(searchTerm.toLowerCase()))
-      );
+          payment.student_Name.toLowerCase().includes(lowerSearchTerm));
+
+      return isPaymentTypeMatch && isSearchMatch;
     });
     setFilteredPayments(results);
-    setCurrentPage(1);
-  }, [searchTerm, pendingPayments]);
+    setCurrentPage(1); // Reset to the first page whenever filtering occurs
+  }, [pendingPayments, paymentType, searchTerm]);
+
+  const handleChangePage = (event, value) => {
+    setCurrentPage(value);
+  };
 
   const handleApprove = async (payment) => {
     let requestBody;
-
-    if (paymentType === "Yaya") {
+    console.log("approving payment:", payment);
+    // Prepare request according to payment type
+    if (payment.source === "YaYa") {
       requestBody = {
         CustomerID: "Dawit",
         Country: "ETHIOPIATEST",
         BankID: "02",
-        UniqueID: payment.customer_Account,
+        UniqueID: payment.customerAccount,
         FunctionName: "GETNAME",
         ISOFieldsRequest: null,
         ISOFieldsResponse: null,
@@ -140,11 +153,11 @@ const PaymentSupervision = () => {
         InfoFields: {
           InfoField1: payment.bill_ID,
           InfoField2: payment.customer_Phone_Number,
-          InfoField3: payment.customer_Name,
-          InfoField7: payment.customer_Account,
+          InfoField3: payment.customerName,
+          InfoField7: payment.customerAccount,
           InfoField15: payment.transfer_To,
           InfoField16: payment.narration,
-          InfoField17: payment.branch_ID,
+          InfoField17: payment.branchID,
           InfoField18: payment.createdOn.toString(),
           InfoField19: localStorage.getItem("username"),
         },
@@ -184,29 +197,32 @@ const PaymentSupervision = () => {
           ConnString: "",
         },
       };
-    } else if (paymentType === "Sekela") {
+    } else if (payment.source === "Sekela") {
       requestBody = {
         Student_ID: payment.student_ID,
-        Total_Amount: payment.total_Amount,
-        Customer_Account: payment.customer_Account,
+        Total_Amount: payment.amount,
+        Customer_Account: payment.customerAccount,
         To_Account: payment.to_Account,
-        Branch_ID: payment.branch_ID,
+        Branch_ID: payment.branchID,
         Created_By: localStorage.getItem("username"),
         Created_On: payment.created_On,
         Narration: payment.narration,
         Transaction_ID: payment.transaction_ID,
       };
+
+      console.log(requestBody);
     } else {
       return; // Exit if no valid payment type is found
     }
 
     setIsLoading(true);
-
+    setError(null);
+    setSuccessMessage(null);
     let endpoint;
 
-    if (paymentType === "Yaya") {
+    if (payment.source === "YaYa") {
       endpoint = "http://10.10.105.21:7271/api/YAYA/B2YaYa";
-    } else if (paymentType === "Sekela") {
+    } else if (payment.source === "Sekela") {
       endpoint = "http://10.10.105.21:7271/api/Portals/B2Sekela";
     } else {
       return; // Exit if no valid payment type is found
@@ -221,7 +237,7 @@ const PaymentSupervision = () => {
         setError(response.data?.message);
       } else if (response.data?.status === "200") {
         setSuccessMessage("Payment approved successfully!");
-        // Refresh the pending payments list after approval
+        closeModal();
         await fetchPendingPayments();
       }
     } catch (err) {
@@ -234,36 +250,40 @@ const PaymentSupervision = () => {
 
   const handleReject = async (payment) => {
     let requestBody;
+    // console.log("approving payment:", payment);
 
-    if (paymentType === "Yaya") {
+    if (payment.source === "YaYa") {
       requestBody = {
         Bill_ID: payment.bill_ID,
-        Customer_Account: payment.customer_Account,
+        Customer_Account: payment.customerAccount,
         Client_yaya_account: payment.client_yaya_account,
-        Branch_ID: payment.branch_ID,
+        Branch_ID: payment.branchID,
         RejectedON: new Date().toLocaleString(),
         RejectedBy: localStorage.getItem("username"),
       };
-    } else if (paymentType === "Sekela") {
+    } else if (payment.source === "Sekela") {
       requestBody = {
         Student_ID: payment.student_ID,
-        Customer_Account: payment.customer_Account,
+        Customer_Account: payment.customerAccount,
         To_Account: payment.to_Account,
-        Branch_ID: payment.branch_ID,
+        Branch_ID: payment.branchID,
         RejectedON: new Date().toLocaleString(),
         RejectedBy: localStorage.getItem("username"),
       };
+
+      console.log(requestBody);
     } else {
       return; // Exit if no valid payment type is found
     }
 
     setIsLoading(true);
-
+    setError(null);
+    setSuccessMessage(null);
     let endpoint;
 
-    if (paymentType === "Yaya") {
+    if (payment.source === "YaYa") {
       endpoint = "http://10.10.105.21:7271/api/Portals/RejectPayement";
-    } else if (paymentType === "Sekela") {
+    } else if (payment.source === "Sekela") {
       endpoint = "http://10.10.105.21:7271/api/Portals/RejectSekelaPayement";
     } else {
       return; // Exit if no valid payment type is found
@@ -273,11 +293,12 @@ const PaymentSupervision = () => {
       const response = await axios.post(endpoint, requestBody, {
         headers: { "Content-Type": "application/json" },
       });
+
       if (response.data?.status !== "200") {
         setError(response.data?.message);
       } else if (response.data?.status === "200") {
-        setSuccessMessage("Payment Rejected successfully!");
-        // Refresh the pending payments list after rejection
+        setSuccessMessage("Payment rejected successfully!");
+        closeModal();
         await fetchPendingPayments();
       }
     } catch (err) {
@@ -288,61 +309,141 @@ const PaymentSupervision = () => {
     }
   };
 
-  const handleChangePage = (event, value) => {
-    setCurrentPage(value);
-  };
-
-
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const currentRows = filteredPayments.slice(startIndex, endIndex);
 
   return (
     <Box p={3}>
-      {/* Modal for Review */}
-      <Dialog open={modalIsOpen} onClose={handleCloseModal} maxWidth="sm" fullWidth>
-        <DialogTitle>Review Payment Details</DialogTitle>
+      <Dialog
+        open={modalOpen}
+        onClose={closeModal}
+        maxWidth="sm"
+        fullWidth
+        aria-labelledby="payment-review-title"
+        aria-describedby="payment-review-description"
+      >
+        <DialogTitle id="payment-review-title">
+          Review Payment Details
+        </DialogTitle>
         <DialogContent>
-          {selectedPayment ? (
-            <Box mt={3} p={2} border="1px solid" borderColor="grey.300" borderRadius={2}>
+          {payment ? (
+            <Box
+              mt={3}
+              p={2}
+              border="1px solid"
+              borderColor="grey.300"
+              borderRadius={2}
+            >
               <Typography variant="h6" gutterBottom>
                 Review Payment Details
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <Typography variant="body1">
-                <strong> Amount : </strong> {selectedPayment.total_Amount || selectedPayment.amount}
+                <strong>Type:</strong> {payment.source}
               </Typography>
-              <Typography variant="body1">
-                <strong> Client/Customer Name :  </strong> {selectedPayment.client_Name || selectedPayment.student_Name}
-              </Typography>
-              <Typography variant="body1">
-                <strong> Student Name : </strong>  {selectedPayment.student_Name || selectedPayment.customer_Name}
-              </Typography>
-              <Typography variant="body1">
-                <strong> Customer Account: </strong> {selectedPayment.customer_Account}
-              </Typography>
-
+              {payment.source === "YaYa" ? (
+                <>
+                  <Typography variant="body1">
+                    <strong>Amount:</strong> {payment.amount}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Customer Name:</strong> {payment.customerName}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Customer Account:</strong> {payment.customerAccount}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Phone Number:</strong>{" "}
+                    {payment.customer_Phone_Number}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Narration:</strong> {payment.narration}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Created On:</strong> {payment.createdOn}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Created By:</strong> {payment.createdBy}
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <Typography variant="body1">
+                    <strong>Amount:</strong> {payment.amount}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>months:</strong> {payment.months}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Amounts Per Month:</strong>{" "}
+                    {payment.amounts_Per_Month}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Student Name:</strong> {payment.student_Name}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Customer Account:</strong> {payment.customerAccount}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Phone Number:</strong>{" "}
+                    {payment.customer_Phone_Number}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Transaction ID:</strong> {payment.transaction_ID}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Created On:</strong> {payment.createdOn}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>Created By:</strong> {payment.createdBy}
+                  </Typography>
+                </>
+              )}
             </Box>
-
           ) : (
             <Typography>No payment details available.</Typography>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseModal} color="primary">
-            Close
+          <Button onClick={closeModal} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              if (payment) {
+                handleApprove(payment);
+              }
+              closeModal();
+            }}
+            color="success"
+          >
+            Confirm
+          </Button>
+
+          <Button
+            onClick={() => {
+              if (payment) {
+                handleReject(payment);
+              }
+              closeModal();
+            }}
+            color="error"
+          >
+            Reject
           </Button>
         </DialogActions>
       </Dialog>
 
-
+      {(successMessage || error) && (
+        <Alert severity={successMessage ? "success" : "error"}>
+          {successMessage || error}
+        </Alert>
+      )}
 
       <Typography variant="h4" gutterBottom>
         Pending Payments
       </Typography>
-
-      {error && <Alert severity="error">{error}</Alert>}
-      {successMessage && <Alert severity="success">{successMessage}</Alert>}
 
       <Box display="flex" justifyContent="space-between" mb={3}>
         <TextField
@@ -352,7 +453,6 @@ const PaymentSupervision = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           sx={{ width: "40%" }}
         />
-
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel id="payment-type-label">Payment Type</InputLabel>
           <Select
@@ -380,56 +480,41 @@ const PaymentSupervision = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>{paymentType === "Yaya" ? "Amount" : "Total Amount"}</TableCell>
-                    <TableCell>Client/Customer Name</TableCell>
-                    <TableCell>{paymentType === "Yaya" ? "Customer Name" : "Student Name"}</TableCell>
-                    <TableCell>Customer Account</TableCell>             
-                    <TableCell>Created By</TableCell>    
-                    <TableCell>Created On</TableCell>                  
-                    <TableCell align="center">Actions</TableCell>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Amount</TableCell>
+                    <TableCell>Customer/Student Name</TableCell>
+                    <TableCell>Customer Account</TableCell>
+                    <TableCell>Phone Number</TableCell>
+                    <TableCell>Created By</TableCell>
+                    <TableCell>Created On</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {currentRows.map((payment) => (
-                    <TableRow key={payment.rowID}>
-                      <TableCell>{payment.source?.toUpperCase() }</TableCell>
-                      <TableCell>{payment.total_Amount || payment.amount}</TableCell>
-                      <TableCell>{payment.client_Name || payment.student_Name}</TableCell>
-                      <TableCell>{payment.student_Name || payment.customerName}</TableCell>
-                      <TableCell>{payment.customerAccount}</TableCell>
-                      <TableCell>{payment.createdBy?.toUpperCase()}</TableCell>
-                      <TableCell>{payment.createdOn?.toUpperCase()}</TableCell>
-
-
-                      
-                      <TableCell align="center">
-                        <Box display="flex" justifyContent="center" gap={1}>
-                          <Button
-                            variant="contained"
-                            color="success"
-                            onClick={() => handleReview(payment)}
-                            disabled={isLoading}
-                          >
-                            Review
-                          </Button>
-
-                          <Button
-                            variant="contained"
-                            color="success"
-                            onClick={() => handleApprove(payment)}
-                            disabled={isLoading}
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color="error"
-                            onClick={() => handleReject(payment)}
-                            disabled={isLoading}
-                          >
-                            Reject
-                          </Button>
-                        </Box>
+                  {currentRows.map((row) => (
+                    <TableRow key={row.customer_Account}>
+                      <TableCell>{row.source}</TableCell>
+                      <TableCell>{row.amount}</TableCell>
+                      <TableCell>
+                        {row.source === "YaYa"
+                          ? row.customerName
+                          : row.source === "Sekela"
+                          ? row.student_Name
+                          : ""}
+                      </TableCell>
+                      <TableCell>{row.customerAccount}</TableCell>
+                      <TableCell>{row.customer_Phone_Number}</TableCell>
+                      <TableCell>{row.createdBy}</TableCell>
+                      <TableCell>{row.createdOn}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          onClick={() => handleReview(row)}
+                        >
+                          Review
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -437,22 +522,15 @@ const PaymentSupervision = () => {
               </Table>
             </TableContainer>
           ) : (
-            <Typography textAlign="center" color="textSecondary" mt={3}>
-              No pending payments available.
-            </Typography>
+            <Typography>No pending payments found.</Typography>
           )}
-        </>
-      )}
-
-      {currentRows.length > 0 && (
-        <Box mt={3} display="flex" justifyContent="center">
           <Pagination
             count={Math.ceil(filteredPayments.length / rowsPerPage)}
             page={currentPage}
             onChange={handleChangePage}
-            color="primary"
+            sx={{ mt: 2 }}
           />
-        </Box>
+        </>
       )}
     </Box>
   );

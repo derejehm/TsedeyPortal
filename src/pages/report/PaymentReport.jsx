@@ -39,8 +39,40 @@ const PaymentReport = () => {
   // Function to convert number to words
   const convertNumberToWords = (num) => {
     if (num === 0) return "Zero";
-    const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
-    const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+    const ones = [
+      "",
+      "One",
+      "Two",
+      "Three",
+      "Four",
+      "Five",
+      "Six",
+      "Seven",
+      "Eight",
+      "Nine",
+      "Ten",
+      "Eleven",
+      "Twelve",
+      "Thirteen",
+      "Fourteen",
+      "Fifteen",
+      "Sixteen",
+      "Seventeen",
+      "Eighteen",
+      "Nineteen",
+    ];
+    const tens = [
+      "",
+      "",
+      "Twenty",
+      "Thirty",
+      "Forty",
+      "Fifty",
+      "Sixty",
+      "Seventy",
+      "Eighty",
+      "Ninety",
+    ];
     const thousands = ["", "Thousand", "Million", "Billion"];
 
     const convertChunkToWords = (chunk) => {
@@ -64,7 +96,11 @@ const PaymentReport = () => {
     while (num > 0) {
       const chunk = num % 1000;
       if (chunk > 0) {
-        words = convertChunkToWords(chunk) + (thousands[thousandIndex] ? " " + thousands[thousandIndex] : "") + " " + words;
+        words =
+          convertChunkToWords(chunk) +
+          (thousands[thousandIndex] ? " " + thousands[thousandIndex] : "") +
+          " " +
+          words;
       }
       num = Math.floor(num / 1000);
       thousandIndex++;
@@ -76,8 +112,8 @@ const PaymentReport = () => {
   useEffect(() => {
     const fetchApprovedPayments = async () => {
       const requestBody = {
-        Branch_ID:localStorage.getItem('branch'),
-        User_ID: localStorage.getItem('username'),
+        Branch_ID: localStorage.getItem("branch"),
+        User_ID: localStorage.getItem("username"),
       };
       const endpoint =
         paymentType === "Yaya"
@@ -102,10 +138,17 @@ const PaymentReport = () => {
   useEffect(() => {
     const results = approvedPayments.filter((payment) => {
       return (
-        payment.amount?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+        payment.amount
+          ?.toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
         payment.client_Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.customer_Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.customer_Account?.toLowerCase().includes(searchTerm.toLowerCase())
+        payment.customer_Name
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        payment.customer_Account
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase())
       );
     });
     setFilteredPayments(results);
@@ -120,8 +163,9 @@ const PaymentReport = () => {
       img.onerror = (err) => reject(err);
     });
   };
- 
+
   const generatePDF = async (payment) => {
+    console.log(payment);
     const doc = new jsPDF("p", "mm", "a4");
 
     try {
@@ -133,11 +177,23 @@ const PaymentReport = () => {
       const logoHeight = (mainLogo.height / mainLogo.width) * logoWidth;
       doc.addImage(mainLogo, "PNG", 10, 10, logoWidth, logoHeight);
 
+      // Payment Type Header
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text(
+        `${paymentType} Payment`,
+        doc.internal.pageSize.getWidth() / 2,
+        20,
+        {
+          align: "center",
+        }
+      );
+
       // Date
       doc.setFontSize(10);
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 160, 20);
-      doc.line(10, 30, 200, 30); // Line separator
-      let currentY = 35; // Start below the line
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 160, 30);
+      doc.line(10, 35, 200, 35); // Line separator
+      let currentY = 40; // Start below the line
 
       // Payment Details Header
       doc.setFont("Helvetica", "bold");
@@ -205,10 +261,10 @@ const PaymentReport = () => {
             ]
           : [
               { label: "Created By:", value: payment.created_By },
+              { label: "Created On:", value: payment.created_On },
               { label: "Approved By:", value: payment.approved_By },
               { label: "Approved On:", value: payment.approved_On },
               { label: "Narration:", value: payment.narration },
-              { label: "Phone:", value: payment.customer_Phone },
             ];
 
       doc.setFont("Helvetica", "normal");
@@ -297,7 +353,9 @@ const PaymentReport = () => {
             <TableRow>
               <TableCell>Amount</TableCell>
               <TableCell>Client Name</TableCell>
-              <TableCell>{paymentType === "Yaya" ? "Customer Name" : "Student Name"}</TableCell>
+              <TableCell>
+                {paymentType === "Yaya" ? "Customer Name" : "Student Name"}
+              </TableCell>
               <TableCell>Customer Account</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -306,8 +364,12 @@ const PaymentReport = () => {
             {paginatedPayments.map((payment) => (
               <TableRow key={payment.rowID}>
                 <TableCell>{payment.total_Amount || payment.amount}</TableCell>
-                <TableCell>{payment.client_Name || payment.student_Name}</TableCell>
-                <TableCell>{payment.student_Name || payment.customer_Name}</TableCell>
+                <TableCell>
+                  {payment.client_Name || payment.student_Name}
+                </TableCell>
+                <TableCell>
+                  {payment.student_Name || payment.customer_Name}
+                </TableCell>
                 <TableCell>{payment.customer_Account}</TableCell>
                 <TableCell>
                   <Button
